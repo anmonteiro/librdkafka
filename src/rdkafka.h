@@ -914,7 +914,12 @@ rd_kafka_ScramCredentialInfo_t *rd_kafka_UserScramCredentialsDescription_get_scr
 RD_EXPORT
 void rd_kafka_ScramCredentialInfo_set_mechanism(rd_kafka_ScramCredentialInfo_t *scram_credential_info,int8_t mechanism);
 RD_EXPORT
-void rd_kafka_ScramCredentialInfo_set_iteration(rd_kafka_ScramCredentialInfo_t *scram_credential_info,int32_t iterations);
+void rd_kafka_ScramCredentialInfo_set_iterations(rd_kafka_ScramCredentialInfo_t *scram_credential_info,int32_t iterations);
+RD_EXPORT 
+
+void rd_kafka_ScramCredentialInfo_get_mechanism(rd_kafka_ScramCredentialInfo_t *scram_credential_info,int8_t *mechanism);
+RD_EXPORT
+void rd_kafka_ScramCredentialInfo_get_iterations(rd_kafka_ScramCrdentialInfo_t *scram_credential_info,int32_t *iterations);
 RD_EXPORT
 void rd_kafka_UserScramCredentialAlteration_destroy(rd_kafka_UserScramCredentialAlteration_t *alteration);
 
@@ -930,6 +935,18 @@ void rd_kafka_UserScramCredentialAlterationResultElement_set_user(rd_kafka_UserS
 RD_EXPORT
 void rd_kafka_UserScramCredentialAlterationResultElement_set_error(rd_kafka_UserScramCredentialAlterationResultElement_t *result_element,int16_t errorcode,char *errstr);
 
+RD_EXPORT
+void rd_kafka_DescribeUserScramCredentials_result_count(rd_kafka_DescribeUserScramCredentials_result_t *result,int *num_results);
+RD_EXPORT
+rd_kafka_UserScramCredentialsDescription_t *rd_kafka_DescribeUserScramCredentials_result_get_description(rd_kafka_DescribeUserScramCredentials_result_t *result,int idx);
+RD_EXPORT
+void rd_kafka_UserScramCredentialsDescription_get_user(rd_kafka_UserScramCredentialsDescription_t *description,char **username);
+RD_EXPORT
+void rd_kafka_UserScramCredentialsDescription_get_errorcode(rd_kafka_UserScramCredentialsDescription_t *description,int16_t *errorcode);
+RD_EXPORT
+void rd_kafka_UserScramCredentialsDescription_get_error(rd_kafka_UserScramCredentialsDescription_t *description,char **err);
+RD_EXPORT
+void rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo_cnt(rd_kafka_UserScramCredentialsDescription_t *description,int *num_credentials);
 /*
  * SCRAM API CONFIG Structures and Functionalities **END**
 */
