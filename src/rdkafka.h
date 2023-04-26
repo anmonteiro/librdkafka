@@ -6799,6 +6799,8 @@ typedef enum rd_kafka_admin_op_t {
         RD_KAFKA_ADMIN_OP_LISTCONSUMERGROUPOFFSETS,
         /** AlterConsumerGroupOffsets */
         RD_KAFKA_ADMIN_OP_ALTERCONSUMERGROUPOFFSETS,
+        RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS,
+        RD_KAFKA_ADMIN_OP_ALTERUSERSCRAMCREDENTIALS,
         RD_KAFKA_ADMIN_OP__CNT /**< Number of ops defined */
 } rd_kafka_admin_op_t;
 

@@ -1619,7 +1619,7 @@ static void rd_kafka_AdminOptions_init(rd_kafka_t *rk,
         rd_kafka_confval_init_int(&options->request_timeout, "request_timeout",
                                   0, 3600 * 1000,
                                   rk->rk_conf.admin.request_timeout_ms);
-
+        /* TO DO FOR DESCRIBE AND ALTER USER SCRAM CREDENTIALS*/
         if (options->for_api == RD_KAFKA_ADMIN_OP_ANY ||
             options->for_api == RD_KAFKA_ADMIN_OP_CREATETOPICS ||
             options->for_api == RD_KAFKA_ADMIN_OP_DELETETOPICS ||
@@ -4822,7 +4822,17 @@ rd_kafka_resp_err_t rd_kafka_DescribeUserScramCredentialsRequest(rd_kafka_broker
         */
         rd_kafka_buf_t *rkbuf;
         int16_t ApiVersion = 0; 
+        int features;
         /*Add the correct version of Api*/
+        ApiVersion = rd_kafka_broker_ApiVersion_supported(
+            rkb, RD_KAFKAP_DescribeUserScramCredentials, 0, 0, &features);
+        if (ApiVersion == -1) {
+                rd_snprintf(errstr, errstr_size,
+                            "DescribeUserScramCredentials API (KIP-554) not supported "
+                            "by broker");
+                return RD_KAFKA_RESP_ERR__UNSUPPORTED_FEATURE;
+        }
+
         int num_users = rd_list_cnt(userlist);
 
         rkbuf = rd_kafka_buf_new_request(rkb, RD_KAFKAP_DescribeUserScramCredentials, 1,
@@ -4953,7 +4963,17 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsRequest(rd_kafka_broker_t 
     void *opaque){
         /* Re do it !!!*/
         rd_kafka_buf_t *rkbuf;
-        int16_t ApiVersion = 0;
+        int16_t ApiVersion = 0; 
+        int features;
+        /*Add the correct version of Api*/
+        ApiVersion = rd_kafka_broker_ApiVersion_supported(
+            rkb, RD_KAFKAP_DescribeUserScramCredentials, 0, 0, &features);
+        if (ApiVersion == -1) {
+                rd_snprintf(errstr, errstr_size,
+                            "AlterUserScramCredentials API (KIP-554) not supported "
+                            "by broker");
+                return RD_KAFKA_RESP_ERR__UNSUPPORTED_FEATURE;
+        }
         int num_alterations = rd_list_cnt(user_scram_credential_alterations);
 
         rkbuf = rd_kafka_buf_new_request(rkb, RD_KAFKAP_AlterUserScramCredentials, 1,
@@ -5052,7 +5072,7 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsResponse_parse(rd_kafka_op
         return RD_KAFKA_RESP_ERR_NO_ERROR;
 }
 void rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
-                                        rd_kafka_UserScramCredentialAlteration_t *alterations,
+                                        rd_kafka_UserScramCredentialAlteration_t **alterations,
                                         int num_alterations,
                                         const rd_kafka_AdminOptions_t *options,
                                         rd_kafka_queue_t *rkqu){
@@ -5067,10 +5087,10 @@ void rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
                                             &cbs, options, rkqu->rkqu_q);
         
         rd_list_init(&rko->rko_u.admin_request.args, num_alterations,
-                     rd_kafka_UserScramCredentialAlteration_destroy);   /*To Implement*/
+                     rd_kafka_UserScramCredentialAlteration_destroy);   
         int i;
         for(i =0;i<num_alterations;i++){
-                rd_list_add(&rko->rko_u.admin_request.args,rd_kafka_UserScramCredentialAlteration_copy(&alterations[i]));
+                rd_list_add(&rko->rko_u.admin_request.args,rd_kafka_UserScramCredentialAlteration_copy(alterations[i]));
         }
         rd_kafka_q_enq(rk->rk_ops, rko);
 }
