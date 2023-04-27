@@ -623,32 +623,23 @@ struct rd_kafka_UserScramCredentialAlterationResultElement_s {
         char *user;
         rd_kafka_error_t *error;
 }
-
+rd_kafka_UserScramCredentialAlterationResultElement_t *rd_kafka_UserScramCredentialAlterationResultElement_new(){
+        rd_kafka_UserScramCredentialAlterationResultElement_t *element;
+        element = rd_calloc(1,sizeof(*element));
+        return element;
+}
 void rd_kafka_UserScramCredentialAlterationResultElement_destroy(rd_kafka_UserScramCredentialAlterationResultElement_t *alteration_result_element){
         rd_free(alteration_result_element->user);
         rd_kafka_error_destroy(alteration_result_element->error);
 }
 void rd_kafka_UserScramCredentialAlterationResultElement_set_user(rd_kafka_UserScramCredentialAlterationResultElement_t *result_element,char *user){
+        rd_free(result_element->user);
         result_element->user = rd_strdup(user);
 }
 void rd_kafka_UserScramCredentialAlterationResultElement_set_error(rd_kafka_UserScramCredentialAlterationResultElement_t *result_element,int16_t errorcode,char *errstr){
+        rd_kafka_error_destroy(result_element->error);
         result_element->error = rd_kafka_error_new(errorcode, "%s", errstr);
 }
-
-/* To Discuss this part < Where to put the result */
-void rd_kafka_DescribeUserScramCredentials_result_count(rd_kafka_DescribeUserScramCredentials_result_t *result,int *num_results){
-        *num_results = rd_list_cnt(&rko_result->rko_u.admin_result.results);
-}
-rd_kafka_UserScramCredentialsDescription_t *rd_kafka_DescribeUserScramCredentials_result_get_description(rd_kafka_DescribeUserScramCredentials_result_t *result,int idx){
-        return rd_list_elem(&rko_result->rko_u.admin_result.results,idx);
-}
-void rd_kafka_AlterUserScramCredentials_result_get_count(rd_kafka_AlterUserScramCredentials_result_t *result,int *num_results){
-        *num_results = rd_list_cnt(&rko_result->rko_u.admin_result.result);
-}
-rd_kafka_UserScramCredentialAlterationResultElement_t *rd_kafka_AlterUserScramCredentials_result_get_element(rd_kafka_AlterUserScramCredentials_result_t *result,int idx){
-        return rd_list_elem(&rko_result->rko_u.admin_result.result,idx);
-}
-
 void rd_kafka_UserScramCredentialAlterationResultElement_get_user(rd_kafka_UserScramCredentialAlterationResultElement_t *element,char **user){
         *user = element->user;
 }
@@ -660,6 +651,22 @@ void rd_kafka_UserScramCredentialAlterationResultElement_get_errorcode(rd_kafka_
 void rd_kafka_UserScramCredentialAlterationResultElement_get_error(rd_kafka_UserScramCredentialAlterationResultElement_t *element,char **err){
         *err = element->error->errstr;
 }
+
+void rd_kafka_DescribeUserScramCredentials_result_count(rd_kafka_DescribeUserScramCredentials_result_t *result,int *num_results){
+        *num_results = rd_list_cnt(&rko_result->rko_u.admin_result.results);
+}
+rd_kafka_UserScramCredentialsDescription_t *rd_kafka_DescribeUserScramCredentials_result_get_description(rd_kafka_DescribeUserScramCredentials_result_t *result,int idx){
+        return rd_list_elem(&rko_result->rko_u.admin_result.results,idx);
+}
+
+void rd_kafka_AlterUserScramCredentials_result_get_count(rd_kafka_AlterUserScramCredentials_result_t *result,int *num_results){
+        *num_results = rd_list_cnt(&rko_result->rko_u.admin_result.result);
+}
+rd_kafka_UserScramCredentialAlterationResultElement_t *rd_kafka_AlterUserScramCredentials_result_get_element(rd_kafka_AlterUserScramCredentials_result_t *result,int idx){
+        return rd_list_elem(&rko_result->rko_u.admin_result.result,idx);
+}
+
+
 /**@}*/
 
 #endif /* _RDKAFKA_ADMIN_H_ */
