@@ -892,30 +892,26 @@ void rd_kafka_ScramCredentialInfo_set_mechanism(rd_kafka_ScramCredentialInfo_t *
 RD_EXPORT
 void rd_kafka_ScramCredentialInfo_set_iterations(rd_kafka_ScramCrdentialInfo_t *scram_credential_info,int32_t iterations);
 RD_EXPORT
-void rd_kafka_ScramCredentialInfo_get_mechanism(rd_kafka_ScramCredentialInfo_t *scram_credential_info,rd_kafka_ScramMechanism_t *mechanism);
+rd_kafka_ScramMechanism_t rd_kafka_ScramCredentialInfo_get_mechanism(rd_kafka_ScramCredentialInfo_t *scram_credential_info);
 RD_EXPORT
-void rd_kafka_ScramCredentialInfo_get_iterations(rd_kafka_ScramCrdentialInfo_t *scram_credential_info,int32_t *iterations);
+int32_t rd_kafka_ScramCredentialInfo_get_iterations(rd_kafka_ScramCrdentialInfo_t *scram_credential_info);
 
 typedef struct rd_kafka_UserScramCredentialsDescription_s rd_kafka_UserScramCredentialsDescription_t;
 
 RD_EXPORT
-rd_kafka_UserScramCredentialsDescription_t *rd_kafka_UserScramCredentialsDescription_new();
+rd_kafka_UserScramCredentialsDescription_t *rd_kafka_UserScramCredentialsDescription_new(size_t num_credentials);
 RD_EXPORT
 void rd_kafka_UserScramCredentialsDescription_destroy(rd_kafka_UserScramCredentialsDescription_t *description);
 RD_EXPORT
-void rd_kafka_UserScramCredentialsDescription_allocate_credentialinfos(rd_kafka_UserScramCredentialsDescription_t *description,size_t num_credentials);
-RD_EXPORT
 void rd_kafka_UserScramCredentailsDescription_set_user(rd_kafka_UserScramCredentialsDescription_t *user_scram_credentials_description,char *user);
 RD_EXPORT
-void rd_kafka_UserScramCredentailsDescription_set_error(rd_kafka_UserScramCredentialsDescription_t *description,int16_t errorcode,char *err);
+void rd_kafka_UserScramCredentailsDescription_set_error(rd_kafka_UserScramCredentialsDescription_t *description,rd_kafka_resp_err_t errorcode,char *err);
 RD_EXPORT
-void rd_kafka_UserScramCredentialsDescription_get_user(rd_kafka_UserScramCredentialsDescription_t *description,char **username);
+char *rd_kafka_UserScramCredentialsDescription_get_user(rd_kafka_UserScramCredentialsDescription_t *description);
 RD_EXPORT
-void rd_kafka_UserScramCredentialsDescription_get_errorcode(rd_kafka_UserScramCredentialsDescription_t *description,int16_t *errorcode);
+rd_kafka_eror_t *rd_kafka_UserScramCredentialsDescription_get_error(rd_kafka_UserScramCredentialsDescription_t *description);
 RD_EXPORT
-void rd_kafka_UserScramCredentialsDescription_get_errormessage(rd_kafka_UserScramCredentialsDescription_t *description,char **err);
-RD_EXPORT
-void rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo_cnt(rd_kafka_UserScramCredentialsDescription_t *description,size_t *num_credentials);
+size_t rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo_cnt(rd_kafka_UserScramCredentialsDescription_t *description);
 RD_EXPORT
 rd_kafka_ScramCredentialInfo_t *rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo(rd_kafka_UserScramCredentialsDescription_t *description,size_t idx);
 
@@ -956,22 +952,33 @@ void rd_kafka_UserScramCredentialAlterationResultElement_destroy(rd_kafka_UserSc
 RD_EXPORT
 void rd_kafka_UserScramCredentialAlterationResultElement_set_user(rd_kafka_UserScramCredentialAlterationResultElement_t *result_element,char *user);
 RD_EXPORT
-void rd_kafka_UserScramCredentialAlterationResultElement_set_error(rd_kafka_UserScramCredentialAlterationResultElement_t *result_element,int16_t errorcode,char *errstr);
+void rd_kafka_UserScramCredentialAlterationResultElement_set_error(rd_kafka_UserScramCredentialAlterationResultElement_t *result_element,rd_kafka_resp_err_t errorcode,char *errstr);
 RD_EXPORT
-void rd_kafka_UserScramCredentialAlterationResultElement_get_user(rd_kafka_UserScramCredentialAlterationResultElement_t *element,char **user);
+char *rd_kafka_UserScramCredentialAlterationResultElement_get_user(rd_kafka_UserScramCredentialAlterationResultElement_t *element);
 RD_EXPORT               
-void rd_kafka_UserScramCredentialAlterationResultElement_get_errorcode(rd_kafka_UserScramCredentialAlterationResultElement_t *element,int16_t *errorcode);
+rd_kafka_error_t *rd_kafka_UserScramCredentialAlterationResultElement_get_error(rd_kafka_UserScramCredentialAlterationResultElement_t *element);
 RD_EXPORT
-void rd_kafka_UserScramCredentialAlterationResultElement_get_errormessage(rd_kafka_UserScramCredentialAlterationResultElement_t *element,char **err);
-RD_EXPORT
-void rd_kafka_DescribeUserScramCredentials_result_count(rd_kafka_DescribeUserScramCredentials_result_t *result,size_t *num_results);
+size_t rd_kafka_DescribeUserScramCredentials_result_get_count(rd_kafka_DescribeUserScramCredentials_result_t *result);
 RD_EXPORT
 rd_kafka_UserScramCredentialsDescription_t *rd_kafka_DescribeUserScramCredentials_result_get_description(rd_kafka_DescribeUserScramCredentials_result_t *result,size_t idx);
 RD_EXPORT
-void rd_kafka_AlterUserScramCredentials_result_get_count(rd_kafka_AlterUserScramCredentials_result_t *result,size_t *num_results);
+size_t rd_kafka_AlterUserScramCredentials_result_get_count(rd_kafka_AlterUserScramCredentials_result_t *result);
 RD_EXPORT
 rd_kafka_UserScramCredentialAlterationResultElement_t *rd_kafka_AlterUserScramCredentials_result_get_element(rd_kafka_AlterUserScramCredentials_result_t *result,size_t idx);
 
+RD_EXPORT
+void rd_kafka_DescribeUserScramCredentials(rd_kafka_t *rk,
+                           char **users,
+                           size_t num_users,
+                           const rd_kafka_AdminOptions_t *options,
+                           rd_kafka_queue_t *rkqu);
+
+RD_EXPORT
+void rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
+                                        rd_kafka_UserScramCredentialAlteration_t **alterations,
+                                        size_t num_alterations,
+                                        const rd_kafka_AdminOptions_t *options,
+                                        rd_kafka_queue_t *rkqu)
 
 /*
  * SCRAM API CONFIG Structures and Functionalities **END**

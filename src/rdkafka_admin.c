@@ -4928,7 +4928,7 @@ rd_kafka_DescribeUserScramCredentialsResponse_parse(rd_kafka_op_t *rko_req,
 }
 void rd_kafka_DescribeUserScramCredentials(rd_kafka_t *rk,
                            char **users,
-                           int num_users,
+                           size_t num_users,
                            const rd_kafka_AdminOptions_t *options,
                            rd_kafka_queue_t *rkqu){
 
@@ -5073,7 +5073,7 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsResponse_parse(rd_kafka_op
 }
 void rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
                                         rd_kafka_UserScramCredentialAlteration_t **alterations,
-                                        int num_alterations,
+                                        size_t num_alterations,
                                         const rd_kafka_AdminOptions_t *options,
                                         rd_kafka_queue_t *rkqu){
         rd_kafka_op_t *rko;
