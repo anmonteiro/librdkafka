@@ -220,10 +220,7 @@ int main(int argc, char **argv) {
         size_t num_alterations;
         rd_kafka_UserScramCredentialAlteration_t *alterations[1];
 
-        alterations[0] = rd_kafka_UserScramCredentialAlteration_new();
-        /* SET THE TYPE FIRST BEFORE THE ARGUMENTS*/
-
-        rd_kafka_UserScramCredentialAlteration_set_type(alterations[0],RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_UPSERT);
+        alterations[0] = rd_kafka_UserScramCredentialAlteration_new(RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_UPSERT);
 
         rd_kafka_UserScramCredentialAlteration_set_user(alterations[0],username);
 
@@ -356,10 +353,7 @@ int main(int argc, char **argv) {
                 }
         }
         /* Delete the user mechanism */
-        alterations[0] = rd_kafka_UserScramCredentialAlteration_new();
-        /* SET THE TYPE FIRST BEFORE THE ARGUMENTS*/
-
-        rd_kafka_UserScramCredentialAlteration_set_type(alterations[0],RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_DELETE);
+        alterations[0] = rd_kafka_UserScramCredentialAlteration_new(RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_DELETE);
 
         rd_kafka_UserScramCredentialAlteration_set_user(alterations[0],username);
 
@@ -402,11 +396,11 @@ int main(int argc, char **argv) {
                         rd_kafka_UserScramCredentialAlterationResultElement_t *element = rd_kafka_AlterUserScramCredentials_result_get_element(result,i); /* To Implement */
                         char *username;
                         char *err;
-                        int8_t errorcode;
+                        int16_t errorcode;
                         rd_kafka_UserScramCredentialAlterationResultElement_get_user(element,&username);
                         rd_kafka_UserScramCredentialAlterationResultElement_get_errorcode(element,&errorcode);
                         if(errorcode){
-                                rd_kafka_UserScramCredentialAlterationResultElement_get_err(element,&err);
+                                rd_kafka_UserScramCredentialAlterationResultElement_get_error(element,&err);
                                 printf("Username : %s , errorcode : %d , error-message : %s\n",username,errorcode,err);
                         }else{
                                 printf("Username : %s \n",username);

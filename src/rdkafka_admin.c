@@ -4961,7 +4961,7 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsRequest(rd_kafka_broker_t 
     rd_kafka_replyq_t replyq,
     rd_kafka_resp_cb_t *resp_cb,
     void *opaque){
-        /* Re do it !!!*/
+        
         rd_kafka_buf_t *rkbuf;
         int16_t ApiVersion = 0; 
         int features;
