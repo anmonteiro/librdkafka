@@ -903,10 +903,6 @@ rd_kafka_UserScramCredentialsDescription_t *rd_kafka_UserScramCredentialsDescrip
 RD_EXPORT
 void rd_kafka_UserScramCredentialsDescription_destroy(rd_kafka_UserScramCredentialsDescription_t *description);
 RD_EXPORT
-void rd_kafka_UserScramCredentailsDescription_set_user(rd_kafka_UserScramCredentialsDescription_t *user_scram_credentials_description,char *user);
-RD_EXPORT
-void rd_kafka_UserScramCredentailsDescription_set_error(rd_kafka_UserScramCredentialsDescription_t *description,rd_kafka_resp_err_t errorcode,char *err);
-RD_EXPORT
 char *rd_kafka_UserScramCredentialsDescription_get_user(rd_kafka_UserScramCredentialsDescription_t *description);
 RD_EXPORT
 rd_kafka_eror_t *rd_kafka_UserScramCredentialsDescription_get_error(rd_kafka_UserScramCredentialsDescription_t *description);
@@ -939,9 +935,7 @@ void rd_kafka_UserScramCredentialAlteration_set_saltedpassword(rd_kafka_UserScra
 RD_EXPORT
 void rd_kafka_UserScramCredentialAlteration_set_mechanism(rd_kafka_UserScramCredentialAlteration_t *alteration,rd_kafka_ScramMechanism_t mechanism);
 RD_EXPORT
-void rd_kafka_UserScramCredentialAlteration_set_iterations(rd_kafka_UserScramCredentialAlteration_t *alteration,int32_t iterations){
-        alteration->alteration.upsertion.credential_info.iterations = iterations;
-}
+void rd_kafka_UserScramCredentialAlteration_set_iterations(rd_kafka_UserScramCredentialAlteration_t *alteration,int32_t iterations);
 
 typedef struct rd_kafka_UserScramCredentialAlterationResultElement_s rd_kafka_UserScramCredentialAlterationResultElement_t;
 
@@ -949,10 +943,6 @@ RD_EXPORT
 rd_kafka_UserScramCredentialAlterationResultElement_t *rd_kafka_UserScramCredentialAlterationResultElement_new();
 RD_EXPORT
 void rd_kafka_UserScramCredentialAlterationResultElement_destroy(rd_kafka_UserScramCredentialAlterationResultElement_t *alteration_result_element);
-RD_EXPORT
-void rd_kafka_UserScramCredentialAlterationResultElement_set_user(rd_kafka_UserScramCredentialAlterationResultElement_t *result_element,char *user);
-RD_EXPORT
-void rd_kafka_UserScramCredentialAlterationResultElement_set_error(rd_kafka_UserScramCredentialAlterationResultElement_t *result_element,rd_kafka_resp_err_t errorcode,char *errstr);
 RD_EXPORT
 char *rd_kafka_UserScramCredentialAlterationResultElement_get_user(rd_kafka_UserScramCredentialAlterationResultElement_t *element);
 RD_EXPORT               

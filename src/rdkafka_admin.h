@@ -485,7 +485,7 @@ enum rd_kafka_ScramMechanism_s {
 struct rd_kafka_ScramCredentialInfo_s {
         rd_kafka_ScramMechanism_t mechanism;
         int32_t iterations; 
-}
+};
 void rd_kafka_ScramCredentialInfo_set_mechanism(rd_kafka_ScramCredentialInfo_t *scram_credential_info,rd_kafka_ScramMechanism_t mechanism){
         scram_credential_info->mechanism = mechanism;
 }
@@ -503,7 +503,7 @@ struct rd_kafka_UserScramCredentialsDescription_s {
         rd_kafka_error_t *error;
         size_t credential_info_cnt;
         rd_kafka_ScramCredentialInfo_t *credential_infos;
-}
+};
 rd_kafka_UserScramCredentialsDescription_t *rd_kafka_UserScramCredentialsDescription_new(size_t num_credentials){
         rd_kafka_UserScramCredentialsDescription_t *description;
         description = rd_calloc(1,sizeof(*description));
@@ -542,7 +542,7 @@ enum rd_kafka_UserScramCredentialAlteration_type_s {
         RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_UPSERT,
         RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_DELETE,
         RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_CNT
-}
+};
 struct rd_kafka_UserScramCredentialAlteration_s {
         char *user;
         rd_kafka_UserScramCredentialAlteration_type_t alteration_type;
@@ -556,7 +556,7 @@ struct rd_kafka_UserScramCredentialAlteration_s {
                         rd_kafka_ScramMechanism_t mechanism;
                 } deletion;
         }alteration;
-}
+};
 rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialAlteration_new(rd_kafka_UserScramCredentialAlteration_type_t type){
         rd_kafka_UserScramCredentialAlteration_t *alteration;
         alteration = rd_calloc(1,sizeof(*alteration));
@@ -616,7 +616,7 @@ void rd_kafka_UserScramCredentialAlteration_set_iterations(rd_kafka_UserScramCre
 struct rd_kafka_UserScramCredentialAlterationResultElement_s {
         char *user;
         rd_kafka_error_t *error;
-}
+};
 rd_kafka_UserScramCredentialAlterationResultElement_t *rd_kafka_UserScramCredentialAlterationResultElement_new(){
         rd_kafka_UserScramCredentialAlterationResultElement_t *element;
         element = rd_calloc(1,sizeof(*element));
