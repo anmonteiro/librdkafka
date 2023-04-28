@@ -1624,7 +1624,9 @@ static void rd_kafka_AdminOptions_init(rd_kafka_t *rk,
             options->for_api == RD_KAFKA_ADMIN_OP_CREATETOPICS ||
             options->for_api == RD_KAFKA_ADMIN_OP_DELETETOPICS ||
             options->for_api == RD_KAFKA_ADMIN_OP_CREATEPARTITIONS ||
-            options->for_api == RD_KAFKA_ADMIN_OP_DELETERECORDS)
+            options->for_api == RD_KAFKA_ADMIN_OP_DELETERECORDS ||
+            options->for_api == RD_KAFKA_ADMIN_OP_ALTERUSERSCRAMCREDENTIALS ||
+            options->for_api == RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS)
                 rd_kafka_confval_init_int(&options->operation_timeout,
                                           "operation_timeout", -1, 3600 * 1000,
                                           rk->rk_conf.admin.request_timeout_ms);

@@ -410,6 +410,8 @@ void rd_kafka_op_destroy(rd_kafka_op_t *rko) {
                 break;
 
         case RD_KAFKA_OP_ADMIN_RESULT:
+        case RD_KAFKA_OP_ALTERUSERSCRAMCREDENTIALS:
+        case RD_KAFKA_OP_DESCRIBEUSERSCRAMCREDENTIALS:
                 rd_list_destroy(&rko->rko_u.admin_result.args);
                 rd_list_destroy(&rko->rko_u.admin_result.results);
                 RD_IF_FREE(rko->rko_u.admin_result.errstr, rd_free);
