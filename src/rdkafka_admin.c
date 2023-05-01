@@ -4825,6 +4825,7 @@ rd_kafka_resp_err_t rd_kafka_DescribeUserScramCredentialsRequest(rd_kafka_broker
         rd_kafka_buf_t *rkbuf;
         int16_t ApiVersion = 0; 
         int features;
+        size_t i;
         /*Add the correct version of Api*/
         ApiVersion = rd_kafka_broker_ApiVersion_supported(
             rkb, RD_KAFKAP_DescribeUserScramCredentials, 0, 0, &features);
@@ -4840,7 +4841,6 @@ rd_kafka_resp_err_t rd_kafka_DescribeUserScramCredentialsRequest(rd_kafka_broker
         rkbuf = rd_kafka_buf_new_request(rkb, RD_KAFKAP_DescribeUserScramCredentials, 1,
                                          num_users*25);
         rd_kafka_buf_write_i32(rkbuf,num_users);
-        size_t i;
         for(i=0;i<num_users;i++){
                rd_kafkap_str_t *user = rd_list_elem(userlist,i);
                rd_kafka_buf_write_str(rkbuf,user->str,user->len);
@@ -4864,6 +4864,7 @@ rd_kafka_DescribeUserScramCredentialsResponse_parse(rd_kafka_op_t *rko_req,
         int32_t num_users;
         int16_t error_code;
         rd_kafkap_str_t error_msg = RD_KAFKAP_STR_INITIALIZER;
+        size_t i;
         /*
         DescribeUserScramCredentials Response (Version: 0) => throttle_time_ms error_code error_message [results] TAG_BUFFER 
         throttle_time_ms => INT32
@@ -4895,7 +4896,6 @@ rd_kafka_DescribeUserScramCredentialsResponse_parse(rd_kafka_op_t *rko_req,
         rd_kafka_buf_read_i32(reply,&num_users);
         rd_list_init(&rko_result->rko_u.admin_result.results,num_users,rd_kafka_UserScramCredentialsDescription_destroy);
         
-        size_t i;
         for(int i=0;i<num_users;i++){
                 rd_kafkap_str_t username;
                 int16_t user_error_code;
@@ -4934,7 +4934,7 @@ void rd_kafka_DescribeUserScramCredentials(rd_kafka_t *rk,
                            rd_kafka_queue_t *rkqu){
 
         rd_kafka_op_t *rko;
-
+        int i;
         static const struct rd_kafka_admin_worker_cbs cbs = {
             rd_kafka_DescribeUserScramCredentialsRequest,
             rd_kafka_DescribeUserScramCredentialsResponse_parse,
@@ -4946,7 +4946,6 @@ void rd_kafka_DescribeUserScramCredentials(rd_kafka_t *rk,
 
         rd_list_init(&rko->rko_u.admin_request.args, user_cnt,
                      rd_kafkap_str_destroy);
-        int i;
         for(i =0;i<user_cnt;i++){
                 rd_list_add(&rko->rko_u.admin_request.args,
                                 rd_kafkap_str_new(users[i],-1));
@@ -4966,6 +4965,8 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsRequest(rd_kafka_broker_t 
         rd_kafka_buf_t *rkbuf;
         int16_t ApiVersion = 0; 
         int features;
+        int32_t num_deletions = 0;
+        size_t i;
         /*Add the correct version of Api*/
         ApiVersion = rd_kafka_broker_ApiVersion_supported(
             rkb, RD_KAFKAP_DescribeUserScramCredentials, 0, 0, &features);
@@ -4994,8 +4995,7 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsRequest(rd_kafka_broker_t 
         */
         size_t of_deletions = rd_kafka_buf_write_arraycnt_pos(rkbuf);
         
-        int32_t num_deletions = 0;
-        size_t i;
+        
         /* The Deletion Scram Requests*/
         for(i=0;i<num_alterations;i++){
                 rd_kafka_UserScramCredentialAlteration_t *alteration = rd_list_elem(user_scram_credential_alterations,i);
@@ -5037,6 +5037,7 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsResponse_parse(rd_kafka_op
         int32_t num_results;
         int16_t error_code;
         rd_kafkap_str_t error_msg;
+        int i;
         /*
                 AlterUserScramCredentials Response (Version: 0) => throttle_time_ms [results] TAG_BUFFER 
                 throttle_time_ms => INT32
@@ -5052,7 +5053,6 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsResponse_parse(rd_kafka_op
 
         
         rd_list_init(&rko_result->rko_u.admin_result.results,num_results,rd_kafka_UserScramCredentialAlterationResultElement_destroy);  /*To Implement*/
-        int i;
         for(int i=0;i<num_results;i++){
                 rd_kafkap_str_t username;
                 int16_t user_error_code;
@@ -5063,9 +5063,8 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsResponse_parse(rd_kafka_op
                 rd_kafka_buf_read_str(reply,&user_error_msg);
                 
                 rd_kafka_buf_skip_tags(reply);
-                rd_kafka_UserScramCredentialAlterationResultElement_t *result_element = rd_kafka_UserScramCredentialAlterationResultElement_new();
-                rd_kafka_UserScramCredentialAlterationResultElement_set_user(result_element,username.str);      /*Why not include*/
-                rd_kafka_UserScramCredentialAlterationResultElement_set_error(result_element,user_error_code,user_error_msg.str); /*why not included*/
+                rd_kafka_UserScramCredentialAlterationResultElement_t *result_element = rd_kafka_UserScramCredentialAlterationResultElement_new(username.str);
+                rd_kafka_UserScramCredentialAlterationResultElement_set_error(result_element,user_error_code,user_error_msg.str);
                 rd_list_add(&rko_result->rko_u.admin_result.results,result_element);         
         }
         *rko_resultp = rko_result;
@@ -5078,6 +5077,7 @@ void rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
                                         const rd_kafka_AdminOptions_t *options,
                                         rd_kafka_queue_t *rkqu){
         rd_kafka_op_t *rko;
+        size_t i;
         static const struct rd_kafka_admin_worker_cbs cbs = {
             rd_kafka_AlterUserScramCredentialsRequest,
             rd_kafka_AlterUserScramCredentialsResponse_parse,
@@ -5089,7 +5089,7 @@ void rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
         
         rd_list_init(&rko->rko_u.admin_request.args, alteration_cnt,
                      rd_kafka_UserScramCredentialAlteration_destroy);   
-        size_t i;
+        
         for(i =0;i<alteration_cnt;i++){
                 rd_list_add(&rko->rko_u.admin_request.args,rd_kafka_UserScramCredentialAlteration_copy(alterations[i]));
         }

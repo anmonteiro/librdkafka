@@ -614,18 +614,15 @@ struct rd_kafka_UserScramCredentialAlterationResultElement_s {
         char *user;
         rd_kafka_error_t *error;
 };
-rd_kafka_UserScramCredentialAlterationResultElement_t *rd_kafka_UserScramCredentialAlterationResultElement_new(){
+rd_kafka_UserScramCredentialAlterationResultElement_t *rd_kafka_UserScramCredentialAlterationResultElement_new(const char *username){
         rd_kafka_UserScramCredentialAlterationResultElement_t *element;
         element = rd_calloc(1,sizeof(*element));
+        element->user = rd_strdup(username);
         return element;
 }
 void rd_kafka_UserScramCredentialAlterationResultElement_destroy(rd_kafka_UserScramCredentialAlterationResultElement_t *alteration_result_element){
         rd_free(alteration_result_element->user);
         rd_kafka_error_destroy(alteration_result_element->error);
-}
-void rd_kafka_UserScramCredentialAlterationResultElement_set_user(rd_kafka_UserScramCredentialAlterationResultElement_t *result_element,char *user){
-        rd_free(result_element->user);
-        result_element->user = rd_strdup(user);
 }
 void rd_kafka_UserScramCredentialAlterationResultElement_set_error(rd_kafka_UserScramCredentialAlterationResultElement_t *result_element,rd_kafka_resp_err_t errorcode,char *errstr){
         rd_kafka_error_destroy(result_element->error);
