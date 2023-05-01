@@ -4928,8 +4928,8 @@ rd_kafka_DescribeUserScramCredentialsResponse_parse(rd_kafka_op_t *rko_req,
         
 }
 void rd_kafka_DescribeUserScramCredentials(rd_kafka_t *rk,
-                           char **users,
-                           size_t num_users,
+                           const char **users,
+                           size_t user_cnt,
                            const rd_kafka_AdminOptions_t *options,
                            rd_kafka_queue_t *rkqu){
 
@@ -4944,10 +4944,10 @@ void rd_kafka_DescribeUserScramCredentials(rd_kafka_t *rk,
                                             RD_KAFKA_EVENT_DESCRIBEUSERSCRAMCREDENTIALS_RESULT,
                                             &cbs, options, rkqu->rkqu_q);
 
-        rd_list_init(&rko->rko_u.admin_request.args, num_users,
+        rd_list_init(&rko->rko_u.admin_request.args, user_cnt,
                      rd_kafkap_str_destroy);
         int i;
-        for(i =0;i<num_users;i++){
+        for(i =0;i<user_cnt;i++){
                 rd_list_add(&rko->rko_u.admin_request.args,
                                 rd_kafkap_str_new(users[i],-1));
         }
@@ -5074,7 +5074,7 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsResponse_parse(rd_kafka_op
 }
 void rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
                                         rd_kafka_UserScramCredentialAlteration_t **alterations,
-                                        size_t num_alterations,
+                                        size_t alteration_cnt,
                                         const rd_kafka_AdminOptions_t *options,
                                         rd_kafka_queue_t *rkqu){
         rd_kafka_op_t *rko;
@@ -5087,10 +5087,10 @@ void rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
                                             RD_KAFKA_EVENT_ALTERUSERSCRAMCREDENTIALS_RESULT,
                                             &cbs, options, rkqu->rkqu_q);
         
-        rd_list_init(&rko->rko_u.admin_request.args, num_alterations,
+        rd_list_init(&rko->rko_u.admin_request.args, alteration_cnt,
                      rd_kafka_UserScramCredentialAlteration_destroy);   
         size_t i;
-        for(i =0;i<num_alterations;i++){
+        for(i =0;i<alteration_cnt;i++){
                 rd_list_add(&rko->rko_u.admin_request.args,rd_kafka_UserScramCredentialAlteration_copy(alterations[i]));
         }
         rd_kafka_q_enq(rk->rk_ops, rko);

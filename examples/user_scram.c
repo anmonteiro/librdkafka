@@ -1,7 +1,7 @@
 /*
  * librdkafka - Apache Kafka C library
  *
- * Copyright (c) 2020, Magnus Edenhill
+ * Copyright (c) 2023, Adhitya Mahajan
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -173,6 +173,11 @@ int main(int argc, char **argv) {
                 size_t i;
                 result  = rd_kafka_event_DescribeUserScramCredentials_result(event);
                 num_results = rd_kafka_DescribeUserScramCredentials_result_get_count(result);
+                rd_kafka_resp_err_t request_errorcode = rd_kafka_DescribeUserScramCredentials_result_get_errorcode(result);
+                if(request_errorcode){
+                        char *errormsg = rd_kafka_DescribeUserScramCredentials_result_get_errormessage(result);
+                        printf("Request Level Error Message : %s \n",errormsg);
+                }
                 printf("DescribeUserScramCredentialsResults results:\n");
                 for (i = 0; i < num_results; i++){
                         rd_kafka_UserScramCredentialsDescription_t *description;
@@ -312,6 +317,11 @@ int main(int argc, char **argv) {
                 size_t i;
                 result  = rd_kafka_event_DescribeUserScramCredentials_result(event);
                 num_results = rd_kafka_DescribeUserScramCredentials_result_get_count(result);
+                rd_kafka_resp_err_t request_errorcode = rd_kafka_DescribeUserScramCredentials_result_get_errorcode(result);
+                if(request_errorcode){
+                        char *errormsg = rd_kafka_DescribeUserScramCredentials_result_get_errormessage(result);
+                        printf("Request Level Error Message : %s \n",errormsg);
+                }
                 printf("DescribeUserScramCredentialsResults results:\n");
                 for (i = 0; i < num_results; i++){
                         rd_kafka_UserScramCredentialsDescription_t *description;
@@ -405,7 +415,7 @@ int main(int argc, char **argv) {
         }
         /* Describe the user mechanisms */
         options =
-            rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS);  /* to write the options*/
+            rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS);  
         if (rd_kafka_AdminOptions_set_request_timeout(
                 options, 30 * 1000 /* 30s */, errstr, sizeof(errstr))) {
                 fprintf(stderr, "%% Failed to set timeout: %s\n", errstr);
@@ -435,6 +445,11 @@ int main(int argc, char **argv) {
                 size_t i;
                 result  = rd_kafka_event_DescribeUserScramCredentials_result(event);
                 num_results = rd_kafka_DescribeUserScramCredentials_result_get_count(result);
+                rd_kafka_resp_err_t request_errorcode = rd_kafka_DescribeUserScramCredentials_result_get_errorcode(result);
+                if(request_errorcode){
+                        char *errormsg = rd_kafka_DescribeUserScramCredentials_result_get_errormessage(result);
+                        printf("Request Level Error Message : %s \n",errormsg);
+                }
                 printf("DescribeUserScramCredentialsResults results:\n");
                 for (i = 0; i < num_results; i++){
                         rd_kafka_UserScramCredentialsDescription_t *description;
