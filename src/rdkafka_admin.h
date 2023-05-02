@@ -509,8 +509,11 @@ rd_kafka_UserScramCredentialsDescription_t *rd_kafka_UserScramCredentialsDescrip
         rd_kafka_UserScramCredentialsDescription_t *description;
         description = rd_calloc(1,sizeof(*description));
         description->credential_info_cnt = num_credentials;
-        rd_kafka_ScramCredentialInfo_t *credentialinfo;
-        description->credential_infos = rd_calloc(num_credentials,sizeof(*credentialinfo));
+        description->credential_infos = NULL;
+        if(num_credentials > 0){
+                rd_kafka_ScramCredentialInfo_t *credentialinfo;
+                description->credential_infos = rd_calloc(num_credentials,sizeof(*credentialinfo));
+        }
         return description;
 }
 void rd_kafka_UserScramCredentialsDescription_destroy(rd_kafka_UserScramCredentialsDescription_t *description){
