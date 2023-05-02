@@ -911,7 +911,7 @@ typedef struct rd_kafka_UserScramCredentialsDescription_s rd_kafka_UserScramCred
 
 
 RD_EXPORT
-rd_kafka_UserScramCredentialsDescription_t *rd_kafka_UserScramCredentialsDescription_new(size_t num_credentials);
+rd_kafka_UserScramCredentialsDescription_t *rd_kafka_UserScramCredentialsDescription_new(const char *username,size_t num_credentials);
 
 /* Will destroy a UserScramCredentialDescription given its pointer */
 RD_EXPORT

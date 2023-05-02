@@ -4908,8 +4908,7 @@ rd_kafka_DescribeUserScramCredentialsResponse_parse(rd_kafka_op_t *rko_req,
 
                 int32_t num_credentials;
                 rd_kafka_buf_read_i32(reply,&num_credentials);
-                rd_kafka_UserScramCredentialsDescription_t *description = rd_kafka_UserScramCredentialsDescription_new(num_credentials);
-                rd_kafka_UserScramCredentailsDescription_set_user(description,username.str);
+                rd_kafka_UserScramCredentialsDescription_t *description = rd_kafka_UserScramCredentialsDescription_new(username.str,num_credentials);
                 rd_kafka_UserScramCredentailsDescription_set_error(description,user_error_code,user_error_msg.str); 
                 for(itr=0;itr<num_credentials;itr++){
                         int8_t mechanism;

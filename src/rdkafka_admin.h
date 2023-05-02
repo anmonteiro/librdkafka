@@ -505,9 +505,10 @@ struct rd_kafka_UserScramCredentialsDescription_s {
         size_t credential_info_cnt;
         rd_kafka_ScramCredentialInfo_t *credential_infos;
 };
-rd_kafka_UserScramCredentialsDescription_t *rd_kafka_UserScramCredentialsDescription_new(size_t num_credentials){
+rd_kafka_UserScramCredentialsDescription_t *rd_kafka_UserScramCredentialsDescription_new(const char *username,size_t num_credentials){
         rd_kafka_UserScramCredentialsDescription_t *description;
         description = rd_calloc(1,sizeof(*description));
+        description->user = rd_strdup(username);
         description->credential_info_cnt = num_credentials;
         description->credential_infos = NULL;
         if(num_credentials > 0){
@@ -521,10 +522,6 @@ void rd_kafka_UserScramCredentialsDescription_destroy(rd_kafka_UserScramCredenti
         rd_kafka_error_destroy(description->error);
         rd_free(description->credential_infos);
         rd_free(description);
-}
-void rd_kafka_UserScramCredentailsDescription_set_user(rd_kafka_UserScramCredentialsDescription_t *user_scram_credentials_description,char *user){
-        rd_free(user_scram_credentials_description->user);
-        user_scram_credentials_description->user = rd_strdup(user);
 }
 void rd_kafka_UserScramCredentailsDescription_set_error(rd_kafka_UserScramCredentialsDescription_t *description,rd_kafka_resp_err_t errorcode,char *err){
         rd_kafka_error_destroy(description->error);        
