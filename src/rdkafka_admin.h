@@ -478,7 +478,7 @@ struct rd_kafka_ConsumerGroupDescription_s {
 };
 /* MY STRUCTS START!!*/
 enum rd_kafka_ScramMechanism_s {
-        UNKNOWN = 0,
+        RD_KAFKA_SCRAM_MECHANISM_UNKNOWN = 0,
         RD_KAFKA_SCRAM_MECHANISM_SHA_256 = 1,
         RD_KAFKA_SCRAM_MECHANISM_SHA_512 = 2,
         RD_KAFKA_SCRAM_MECHANISM__CNT
@@ -505,7 +505,7 @@ struct rd_kafka_UserScramCredentialsDescription_s {
         size_t credential_info_cnt;
         rd_kafka_ScramCredentialInfo_t *credential_infos;
 };
-rd_kafka_UserScramCredentialsDescription_t *rd_kafka_UserScramCredentialsDescription_new(const char *username,size_t num_credentials){
+rd_kafka_UserScramCredentialsDescription_t *(const char *username,size_t num_credentials){
         rd_kafka_UserScramCredentialsDescription_t *description;
         description = rd_calloc(1,sizeof(*description));
         description->user = rd_strdup(username);

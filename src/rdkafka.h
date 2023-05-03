@@ -882,9 +882,9 @@ rd_kafka_error_t *rd_kafka_error_new(rd_kafka_resp_err_t code,
 */
 /* Supported Scram Mechanisms */
 typedef enum rd_kafka_ScramMechanism_s {
-        UNKNOWN = 0,
-        RD_KAFKA_SCRAM_MECHANISM_SHA_256 = 1,
-        RD_KAFKA_SCRAM_MECHANISM_SHA_512 = 2,
+        RD_KAFKA_SCRAM_MECHANISM_UNKNOWN,
+        RD_KAFKA_SCRAM_MECHANISM_SHA_256,
+        RD_KAFKA_SCRAM_MECHANISM_SHA_512,
         RD_KAFKA_SCRAM_MECHANISM__CNT
 }rd_kafka_ScramMechanism_t;
 /* ScramCredentialInfo */
