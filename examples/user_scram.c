@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
 
         /* Describe All the User Scram Mechanisms*/
         DescribeAll(rk);
-
+        return 0;
         /* First Upsert a mechanism*/
         char *username;
         int8_t mechanism;
@@ -252,9 +252,8 @@ int main(int argc, char **argv) {
                 return 1;
         }
         /* Call the AlterUserScramCredentials Function*/
-        rd_kafka_AlterUserScramCredentials(rk,alterations,1,options,queue); /*Update*/
+        rd_kafka_AlterUserScramCredentials(rk,alterations,1,options,queue);
         rd_kafka_AdminOptions_destroy(options);
-
         rd_kafka_UserScramCredentialAlteration_destroy(alterations[0]);
 
          /* Wait for results */
@@ -278,7 +277,7 @@ int main(int argc, char **argv) {
                 printf("AlterUserScramCredentialsResults results:\n");
                 for (i = 0; i < num_results; i++){
                         
-                        rd_kafka_UserScramCredentialAlterationResultElement_t *element = rd_kafka_AlterUserScramCredentials_result_get_element(result,i); /* To Implement */
+                        rd_kafka_UserScramCredentialAlterationResultElement_t *element = rd_kafka_AlterUserScramCredentials_result_get_element(result,i);
                         char *username;
                         rd_kafka_error_t *error;
                         username = rd_kafka_UserScramCredentialAlterationResultElement_get_user(element);
@@ -299,9 +298,7 @@ int main(int argc, char **argv) {
         DescribeAll(rk);
         
         /* Delete the user mechanism */
-        alterations[0] = rd_kafka_UserScramCredentialAlteration_new(RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_DELETE);
-
-        rd_kafka_UserScramCredentialAlteration_set_user(alterations[0],username);
+        alterations[0] = rd_kafka_UserScramCredentialAlteration_new(username,RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_DELETE);
 
         rd_kafka_UserScramCredentialAlteration_set_mechanism(alterations[0],mechanism);
         
@@ -338,7 +335,7 @@ int main(int argc, char **argv) {
                 printf("AlterUserScramCredentialsResults results:\n");
                 for (i = 0; i < num_results; i++){
                         
-                        rd_kafka_UserScramCredentialAlterationResultElement_t *element = rd_kafka_AlterUserScramCredentials_result_get_element(result,i); /* To Implement */
+                        rd_kafka_UserScramCredentialAlterationResultElement_t *element = rd_kafka_AlterUserScramCredentials_result_get_element(result,i); 
                         char *username;
                         rd_kafka_error_t *error;
                         username = rd_kafka_UserScramCredentialAlterationResultElement_get_user(element);
