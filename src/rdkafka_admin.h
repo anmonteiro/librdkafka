@@ -519,7 +519,7 @@ void rd_kafka_UserScramCredentialsDescription_destroy(rd_kafka_UserScramCredenti
 }
 void rd_kafka_UserScramCredentailsDescription_set_error(rd_kafka_UserScramCredentialsDescription_t *description,rd_kafka_resp_err_t errorcode,char *err){
         rd_kafka_error_destroy(description->error);        
-        description->error = rd_kafka_error_new(errorcode,err);
+        description->error = rd_kafka_error_new(errorcode,"%s",err);
 }
 char *rd_kafka_UserScramCredentialsDescription_get_user(rd_kafka_UserScramCredentialsDescription_t *description){
         return description->user;
@@ -540,8 +540,8 @@ struct rd_kafka_UserScramCredentialAlteration_s {
         union{
                 struct {
                 rd_kafka_ScramCredentialInfo_t credential_info;
-                rd_kafkap_bytes_t *salt;
-                rd_kafkap_bytes_t *saltedpassword;
+                char *salt; 
+                char *password; 
                 } upsertion;
                 struct {
                         rd_kafka_ScramMechanism_t mechanism;
@@ -558,8 +558,8 @@ rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialAlteration
 void rd_kafka_UserScramCredentialAlteration_destroy(rd_kafka_UserScramCredentialAlteration_t *alteration){
         rd_free(alteration->user);
         if(alteration->alteration_type == RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_UPSERT){
-                rd_kafkap_bytes_destroy(alteration->alteration.upsertion.salt);
-                rd_kafkap_bytes_destroy(alteration->alteration.upsertion.saltedpassword);
+                rd_free(alteration->alteration.upsertion.salt);
+                rd_free(alteration->alteration.upsertion.password);
         }
         rd_free(alteration);
 }
@@ -568,8 +568,8 @@ rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialAlteration
         copied_alteration->user = rd_strdup(alteration->user);
         copied_alteration->alteration_type = alteration->alteration_type;
         if(alteration->alteration_type == RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_UPSERT /*Upsert*/){
-                copied_alteration->alteration.upsertion.salt = rd_kafkap_bytes_copy(alteration->alteration.upsertion.salt);
-                copied_alteration->alteration.upsertion.saltedpassword = rd_kafkap_bytes_copy(alteration->alteration.upsertion.saltedpassword);
+                copied_alteration->alteration.upsertion.salt = rd_strdup(alteration->alteration.upsertion.salt);
+                copied_alteration->alteration.upsertion.password = rd_strdup(alteration->alteration.upsertion.password);
                 copied_alteration->alteration.upsertion.credential_info.mechanism = alteration->alteration.upsertion.credential_info.mechanism;
                 copied_alteration->alteration.upsertion.credential_info.iterations = alteration->alteration.upsertion.credential_info.iterations;
         }else if(alteration->alteration_type == RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_DELETE /*Delete*/){
@@ -579,14 +579,14 @@ rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialAlteration
 
 }
 
-void rd_kafka_UserScramCredentialAlteration_set_salt(rd_kafka_UserScramCredentialAlteration_t *alteration,char *salt){
-        rd_kafkap_bytes_destroy(alteration->alteration.upsertion.salt);
-        alteration->alteration.upsertion.salt = rd_kafkap_bytes_new(salt,strlen(salt));
+void rd_kafka_UserScramCredentialAlteration_set_salt(rd_kafka_UserScramCredentialAlteration_t *alteration,const char *salt){
+        rd_free(alteration->alteration.upsertion.salt);
+        alteration->alteration.upsertion.salt = rd_strdup(salt);
 }
 
-void rd_kafka_UserScramCredentialAlteration_set_saltedpassword(rd_kafka_UserScramCredentialAlteration_t *alteration,char *saltedpassword){
-        rd_kafkap_bytes_destroy(alteration->alteration.upsertion.saltedpassword);
-        alteration->alteration.upsertion.saltedpassword = rd_kafkap_bytes_new(saltedpassword,strlen(saltedpassword));
+void rd_kafka_UserScramCredentialAlteration_set_saltedpassword(rd_kafka_UserScramCredentialAlteration_t *alteration,const char *password){
+        rd_free(alteration->alteration.upsertion.password);
+        alteration->alteration.upsertion.password = rd_strdup(password);
 }
         
 void rd_kafka_UserScramCredentialAlteration_set_mechanism(rd_kafka_UserScramCredentialAlteration_t *alteration,rd_kafka_ScramMechanism_t mechanism){
