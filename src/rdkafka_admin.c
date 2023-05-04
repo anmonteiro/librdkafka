@@ -5005,19 +5005,6 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsRequest(rd_kafka_broker_t 
                         salted_password => COMPACT_BYTES 
         
         */
-       /*
-                consider the mechanism to be sha_256 , 
-                const EVP_MD *evp = EVP_sha256();
-
-                static int rd_kafka_sasl_scram_Hi0(
-                                  rd_kafka_broker_t *rkb, 
-                                  const EVP_MD *evp,  
-                                  const rd_chariov_t *in,
-                                  const rd_chariov_t *salt,
-                                  int itcnt,
-                                  rd_chariov_t *out)
-                
-       */
         of_deletions = rd_kafka_buf_write_arraycnt_pos(rkbuf);
         
         
@@ -5133,7 +5120,7 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
         rd_kafka_op_t *rko;
         size_t i;
          /* Check here  */
-        if(true){
+        if(!WITH_SSL){
                 int8_t flag = 0;
                 for(i=0;i<alteration_cnt;i++){
                         if(alterations[i]->alteration_type == RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_UPSERT){
