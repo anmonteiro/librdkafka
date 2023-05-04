@@ -5129,7 +5129,7 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
                         }
                 }
                 if(flag){
-                        return -3; /* The error code */
+                        return RD_KAFKA_RESP_ERR_OPENSSL_COMPILATION_MISSING; 
                 }
         }
         static const struct rd_kafka_admin_worker_cbs cbs = {

@@ -629,7 +629,8 @@ typedef enum {
         RD_KAFKA_RESP_ERR_FEATURE_UPDATE_FAILED = 96,
         /** Request principal deserialization failed during forwarding */
         RD_KAFKA_RESP_ERR_PRINCIPAL_DESERIALIZATION_FAILURE = 97,
-
+        /** Librdkafka not compiled with openssl*/
+        RD_KAFKA_RESP_ERR_OPENSSL_COMPILATION_MISSING = 98,
         RD_KAFKA_RESP_ERR_END_ALL,
 } rd_kafka_resp_err_t;
 
