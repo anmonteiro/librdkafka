@@ -5957,21 +5957,6 @@ RD_EXPORT
 rd_kafka_UserScramCredentialAlterationResultElement_t *rd_kafka_AlterUserScramCredentials_result_get_element(rd_kafka_AlterUserScramCredentials_result_t *result,size_t idx);
 
 /* Will Describe all the ScramCredentials for the listed users */
-RD_EXPORT
-void rd_kafka_DescribeUserScramCredentials(rd_kafka_t *rk,
-                           const char **users,
-                           size_t user_cnt,
-                           const rd_kafka_AdminOptions_t *options,
-                           rd_kafka_queue_t *rkqu);
-
-/* Will alter the existing ScramCredentials with the provided configuration changes */
-RD_EXPORT
-void rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
-                                        rd_kafka_UserScramCredentialAlteration_t **alterations,
-                                        size_t alteration_cnt,
-                                        const rd_kafka_AdminOptions_t *options,
-                                        rd_kafka_queue_t *rkqu);
-
 
 
 /**
@@ -9508,6 +9493,22 @@ rd_kafka_error_t *rd_kafka_commit_transaction(rd_kafka_t *rk, int timeout_ms);
  */
 RD_EXPORT
 rd_kafka_error_t *rd_kafka_abort_transaction(rd_kafka_t *rk, int timeout_ms);
+
+RD_EXPORT
+void rd_kafka_DescribeUserScramCredentials(rd_kafka_t *rk,
+                           const char **users,
+                           size_t user_cnt,
+                           const rd_kafka_AdminOptions_t *options,
+                           rd_kafka_queue_t *rkqu);
+
+/* Will alter the existing ScramCredentials with the provided configuration changes */
+RD_EXPORT
+void rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
+                                        rd_kafka_UserScramCredentialAlteration_t **alterations,
+                                        size_t alteration_cnt,
+                                        const rd_kafka_AdminOptions_t *options,
+                                        rd_kafka_queue_t *rkqu);
+
 
 /**@}*/
 

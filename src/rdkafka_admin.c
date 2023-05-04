@@ -4953,6 +4953,18 @@ void rd_kafka_DescribeUserScramCredentials(rd_kafka_t *rk,
         rd_kafka_q_enq(rk->rk_ops, rko);
 
 }
+rd_kafka_resp_err_t rd_kafka_DescribeUserScramCredentials_result_get_errorcode(rd_kafka_DescribeUserScramCredentials_result_t *result){
+        return result->rko_err;
+}
+char *rd_kafka_DescribeUserScramCredentials_result_get_errormessage(rd_kafka_DescribeUserScramCredentials_result_t *result){
+        return result->rko_u.admin_result.errstr;
+}
+size_t rd_kafka_DescribeUserScramCredentials_result_get_count(rd_kafka_DescribeUserScramCredentials_result_t *result){
+        return rd_list_cnt(&result->rko_u.admin_result.results);
+}
+rd_kafka_UserScramCredentialsDescription_t *rd_kafka_DescribeUserScramCredentials_result_get_description(rd_kafka_DescribeUserScramCredentials_result_t *result,size_t idx){
+        return rd_list_elem(&result->rko_u.admin_result.results,idx);
+}
 rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsRequest(rd_kafka_broker_t *rkb,
     const rd_list_t *user_scram_credential_alterations,
     rd_kafka_AdminOptions_t *options,
@@ -5017,7 +5029,7 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsRequest(rd_kafka_broker_t 
                         rd_kafka_buf_write_i8(rkbuf,alteration->alteration.upsertion.credential_info.mechanism);
                         rd_kafka_buf_write_i32(rkbuf,alteration->alteration.upsertion.credential_info.iterations);
                         rd_kafka_buf_write_kbytes(rkbuf,alteration->alteration.upsertion.salt);
-                        rd_kafka_buf_write_kbytes(rkbuf,alteration->alteration.upsertion.salted_password);
+                        rd_kafka_buf_write_kbytes(rkbuf,alteration->alteration.upsertion.saltedpassword);
                         rd_kafka_buf_write_tags(rkbuf);
                 }
         }
@@ -5094,6 +5106,12 @@ void rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
                 rd_list_add(&rko->rko_u.admin_request.args,rd_kafka_UserScramCredentialAlteration_copy(alterations[i]));
         }
         rd_kafka_q_enq(rk->rk_ops, rko);
+}
+size_t rd_kafka_AlterUserScramCredentials_result_get_count(rd_kafka_AlterUserScramCredentials_result_t *result){
+        return rd_list_cnt(&result->rko_u.admin_result.results);
+}
+rd_kafka_UserScramCredentialAlterationResultElement_t *rd_kafka_AlterUserScramCredentials_result_get_element(rd_kafka_AlterUserScramCredentials_result_t *result,size_t idx){
+        return rd_list_elem(&result->rko_u.admin_result.results,(int)idx);
 }
 /**
  * @brief Get an array of rd_kafka_AclBinding_t from a DescribeAcls result.
