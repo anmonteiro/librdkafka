@@ -5119,7 +5119,7 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
        
         rd_kafka_op_t *rko;
         size_t i;
-         /* Check here  */
+
         if(!WITH_SSL){
                 int8_t flag = 0;
                 for(i=0;i<alteration_cnt;i++){

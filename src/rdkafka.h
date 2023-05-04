@@ -9504,7 +9504,7 @@ void rd_kafka_DescribeUserScramCredentials(rd_kafka_t *rk,
 
 /* Will alter the existing ScramCredentials with the provided configuration changes */
 RD_EXPORT
-void rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
+rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
                                         rd_kafka_UserScramCredentialAlteration_t **alterations,
                                         size_t alteration_cnt,
                                         const rd_kafka_AdminOptions_t *options,
