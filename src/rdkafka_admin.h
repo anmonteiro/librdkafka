@@ -553,6 +553,8 @@ rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialAlteration
         alteration = rd_calloc(1,sizeof(*alteration));
         alteration->alteration_type = type;
         alteration->user = rd_strdup(username);
+        if(type == RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_UPSERT)
+                alteration->alteration.upsertion.salt = rd_strdup("Dummy Salt!"); 
         return alteration;
 }
 void rd_kafka_UserScramCredentialAlteration_destroy(rd_kafka_UserScramCredentialAlteration_t *alteration){
