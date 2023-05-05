@@ -5119,6 +5119,12 @@ char *rd_kafka_UserScramCredentialAlterationResultElement_get_user(rd_kafka_User
 rd_kafka_error_t *rd_kafka_UserScramCredentialAlterationResultElement_get_error(rd_kafka_UserScramCredentialAlterationResultElement_t *element){
         return element->error;
 }
+size_t rd_kafka_AlterUserScramCredentials_result_get_count(rd_kafka_AlterUserScramCredentials_result_t *result){
+        return rd_list_cnt(&result->rko_u.admin_result.results);
+}
+rd_kafka_UserScramCredentialAlterationResultElement_t *rd_kafka_AlterUserScramCredentials_result_get_element(rd_kafka_AlterUserScramCredentials_result_t *result,size_t idx){
+        return rd_list_elem(&result->rko_u.admin_result.results,(int)idx);
+}
 rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsRequest(rd_kafka_broker_t *rkb,
     const rd_list_t *user_scram_credential_alterations,
     rd_kafka_AdminOptions_t *options,
@@ -5303,12 +5309,7 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
         }
         rd_kafka_q_enq(rk->rk_ops, rko);
 }
-size_t rd_kafka_AlterUserScramCredentials_result_get_count(rd_kafka_AlterUserScramCredentials_result_t *result){
-        return rd_list_cnt(&result->rko_u.admin_result.results);
-}
-rd_kafka_UserScramCredentialAlterationResultElement_t *rd_kafka_AlterUserScramCredentials_result_get_element(rd_kafka_AlterUserScramCredentials_result_t *result,size_t idx){
-        return rd_list_elem(&result->rko_u.admin_result.results,(int)idx);
-}
+
 /**
  * @brief Get an array of rd_kafka_AclBinding_t from a DescribeAcls result.
  *
