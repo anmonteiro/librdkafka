@@ -951,11 +951,11 @@ rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialAlteration
 
 /* Sets the salt for a UserScramCredentialAlteration */
 RD_EXPORT
-void rd_kafka_UserScramCredentialAlteration_set_salt(rd_kafka_UserScramCredentialAlteration_t *alteration,char *salt);
+void rd_kafka_UserScramCredentialAlteration_set_salt(rd_kafka_UserScramCredentialAlteration_t *alteration,const char *salt);
 
-/* Sets the saltedpassword for a UserScramCredentialAlteration */
+/* Sets the password for a UserScramCredentialAlteration */
 RD_EXPORT
-void rd_kafka_UserScramCredentialAlteration_set_saltedpassword(rd_kafka_UserScramCredentialAlteration_t *alteration,char *saltedpassword);
+void rd_kafka_UserScramCredentialAlteration_set_password(rd_kafka_UserScramCredentialAlteration_t *alteration,const char *password);
 
 /* Sets the mechanism for a UserScramCredentialAlteration */
 RD_EXPORT
