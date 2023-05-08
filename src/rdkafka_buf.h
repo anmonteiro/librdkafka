@@ -1403,7 +1403,8 @@ void rd_kafka_buf_set_maker(rd_kafka_buf_t *rkbuf,
                             rd_kafka_make_req_cb_t *make_cb,
                             void *make_opaque,
                             void (*free_make_opaque_cb)(void *make_opaque));
-static int rd_kafka_sasl_scram_Hi0(rd_kafka_broker_t *rkb,
+
+int rd_kafka_sasl_scram_Hi0(rd_kafka_broker_t *rkb,
                                     const EVP_MD *evp,
                                     const rd_chariov_t *in,
                                     const rd_chariov_t *salt,

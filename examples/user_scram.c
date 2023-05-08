@@ -285,11 +285,11 @@ int main(int argc, char **argv) {
         DescribeAll(rk);
         return 0;
         /* First Upsert a mechanism*/
-        char *username;
-        int8_t mechanism;
-        int32_t iterations;
-        char *salt;
-        char *saltedpassword;
+        char *username = "broker";
+        int8_t mechanism = RD_KAFKA_SCRAM_MECHANISM_SHA_512;
+        int32_t iterations = 10;
+        char *salt = "salt";
+        char *password = "password";
         
         size_t num_alterations;
         rd_kafka_UserScramCredentialAlteration_t *alterations[1];
@@ -298,7 +298,7 @@ int main(int argc, char **argv) {
 
         rd_kafka_UserScramCredentialAlteration_set_salt(alterations[0],salt);
 
-        rd_kafka_UserScramCredentialAlteration_set_saltedpassword(alterations[0],saltedpassword);
+        rd_kafka_UserScramCredentialAlteration_set_password(alterations[0],password);
 
         rd_kafka_UserScramCredentialAlteration_set_mechanism(alterations[0],mechanism);
         rd_kafka_UserScramCredentialAlteration_set_iterations(alterations[0],iterations);

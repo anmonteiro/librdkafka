@@ -255,8 +255,7 @@ static int rd_kafka_sasl_scram_HMAC(rd_kafka_transport_t *rktrans,
 }
 
 
-
-static int rd_kafka_sasl_scram_Hi0(rd_kafka_broker_t *rkb,
+int rd_kafka_sasl_scram_Hi0(rd_kafka_broker_t *rkb,
                                     const EVP_MD *evp,
                                     const rd_chariov_t *in,
                                     const rd_chariov_t *salt,
