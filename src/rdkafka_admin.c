@@ -4997,7 +4997,16 @@ rd_kafka_DescribeUserScramCredentialsResponse_parse(rd_kafka_op_t *rko_req,
         *rko_resultp = rko_result;
 
         return RD_KAFKA_RESP_ERR_NO_ERROR;
-        
+
+        err_parse:
+        if (rko_result)
+                rd_kafka_op_destroy(rko_result);
+
+        rd_snprintf(errstr, errstr_size,
+                    "DescribeUserScramCredentials response protocol parse failure: %s",
+                    rd_kafka_err2str(reply->rkbuf_err));
+
+        return reply->rkbuf_err;
 }
 void rd_kafka_DescribeUserScramCredentials(rd_kafka_t *rk,
                            const char **users,
@@ -5270,6 +5279,15 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsResponse_parse(rd_kafka_op
         *rko_resultp = rko_result;
 
         return RD_KAFKA_RESP_ERR_NO_ERROR;
+        err_parse:
+        if (rko_result)
+                rd_kafka_op_destroy(rko_result);
+
+        rd_snprintf(errstr, errstr_size,
+                    "AlterUserScramCredentials response protocol parse failure: %s",
+                    rd_kafka_err2str(reply->rkbuf_err));
+
+        return reply->rkbuf_err;
 }
 rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentials(rd_kafka_t *rk,
                                         rd_kafka_UserScramCredentialAlteration_t **alterations,

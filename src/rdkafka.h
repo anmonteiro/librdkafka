@@ -5917,22 +5917,6 @@ rd_kafka_event_AlterConsumerGroupOffsets_result(rd_kafka_event_t *rkev);
 RD_EXPORT const rd_kafka_DescribeUserScramCredentials_result_t *
 rd_kafka_event_DescribeUserScramCredentials_result(rd_kafka_event_t *rkev);
 
-
-/**
- * @brief Get AlterUserScramCredentials result.
- *
- * @returns the result of a AlterUserScramCredentials request, or NULL if
- *          event is of different type.
- *
- * @remark The lifetime of the returned memory is the same
- *         as the lifetime of the \p rkev object.
- *
- * Event types:
- *   RD_KAFKA_EVENT_ALTERUSERSCRAMCREDENTIALS_RESULT
- */
-RD_EXPORT   const rd_kafka_AlterUserScramCredentials_result_t *
-rd_kafka_event_AlterUserScramCredentials_result(rd_kafka_event_t *rkev);
-
 /* Returns the request level errorcode(rd_kafka_resp_err_t) of DescribeUserScramCredentials */
 RD_EXPORT
 rd_kafka_resp_err_t rd_kafka_DescribeUserScramCredentials_result_get_errorcode(rd_kafka_DescribeUserScramCredentials_result_t *result);
@@ -5948,6 +5932,21 @@ size_t rd_kafka_DescribeUserScramCredentials_result_get_count(rd_kafka_DescribeU
 /* Returns a pointer to a Description at index idx of a DescribeUserScramCredentials Result */
 RD_EXPORT
 rd_kafka_UserScramCredentialsDescription_t *rd_kafka_DescribeUserScramCredentials_result_get_description(rd_kafka_DescribeUserScramCredentials_result_t *result,size_t idx);
+
+/**
+ * @brief Get AlterUserScramCredentials result.
+ *
+ * @returns the result of a AlterUserScramCredentials request, or NULL if
+ *          event is of different type.
+ *
+ * @remark The lifetime of the returned memory is the same
+ *         as the lifetime of the \p rkev object.
+ *
+ * Event types:
+ *   RD_KAFKA_EVENT_ALTERUSERSCRAMCREDENTIALS_RESULT
+ */
+RD_EXPORT   const rd_kafka_AlterUserScramCredentials_result_t *
+rd_kafka_event_AlterUserScramCredentials_result(rd_kafka_event_t *rkev);
 
 /* Returns the number of Alterations in a AlterUserScramCredentials result */
 RD_EXPORT
