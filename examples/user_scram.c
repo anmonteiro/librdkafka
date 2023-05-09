@@ -87,7 +87,7 @@ static void DescribeAll(rd_kafka_t *rk){
         if (rd_kafka_AdminOptions_set_request_timeout(
                 options, 30 * 1000 /* 30s */, errstr, sizeof(errstr))) {
                 fprintf(stderr, "%% Failed to set timeout: %s\n", errstr);
-                return 1;
+                return ;
         }
         
         /* Null Argument gives us all the users*/
@@ -98,14 +98,14 @@ static void DescribeAll(rd_kafka_t *rk){
 
         /* Wait for results */
         event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
-
+        printf("We got the event !\n");
         if (!event) {
                 /* User hit Ctrl-C */
                 fprintf(stderr, "%% Cancelled by user\n");
 
         } else if (rd_kafka_event_error(event)) {
                 /* DeleteRecords request failed */
-                fprintf(stderr, "%% DeleteRecords failed: %s\n",
+                fprintf(stderr, "%% DescribeUserScramCredentials failed: %s\n",
                         rd_kafka_event_error_string(event));
                 exitcode = 2;
 
@@ -120,7 +120,7 @@ static void DescribeAll(rd_kafka_t *rk){
                         char *errormsg = rd_kafka_DescribeUserScramCredentials_result_get_errormessage(result);
                         printf("Request Level Error Message : %s \n",errormsg);
                 }
-                printf("DescribeUserScramCredentialsResults results:\n");
+                printf("DescribeUserScramCredentialsResults results[%d] [Error Code : %d]:\n",num_results,request_errorcode);
                 for (i = 0; i < num_results; i++){
                         rd_kafka_UserScramCredentialsDescription_t *description;
                         description = rd_kafka_DescribeUserScramCredentials_result_get_description(result,i);
@@ -129,8 +129,10 @@ static void DescribeAll(rd_kafka_t *rk){
                         username = rd_kafka_UserScramCredentialsDescription_get_user(description);
                         error = rd_kafka_UserScramCredentialsDescription_get_error(description);
                         rd_kafka_resp_err_t errorcode = rd_kafka_error_code(error);
+                        printf("        Username : %s Error-code : %d\n",username,errorcode);
                         if(errorcode){
                                 char *errstr = rd_kafka_error_string(error);
+                                printf("                ErrorMessage : %s\n",errstr);
                         }
                         size_t num_credentials = rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo_cnt(description);
 
@@ -144,16 +146,17 @@ static void DescribeAll(rd_kafka_t *rk){
                                 switch (mechanism)
                                 {
                                 case RD_KAFKA_SCRAM_MECHANISM_UNKNOWN:
-                                        printf("        Mechanism is UNKNOWN\n");
+                                        printf("                Mechanism is UNKNOWN\n");
                                 case RD_KAFKA_SCRAM_MECHANISM_SHA_256:
-                                        printf("        Mechanism is SCRAM-SHA-256\n");
+                                        printf("                Mechanism is SCRAM-SHA-256\n");
                                 case RD_KAFKA_SCRAM_MECHANISM_SHA_512:
-                                        printf("        Mechanism is SCRAM=SHA-512\n");
+                                        printf("                Mechanism is SCRAM-SHA-512\n");
                                 }
-                                printf("        Iterations are %d\n",iterations);
+                                printf("                Iterations are %d\n",iterations);
                         }
 
                 }
+                printf("DescribeUserScramCredentials result END\n");
         }
         rd_kafka_event_destroy(event);
 
@@ -171,24 +174,19 @@ static void Alter(rd_kafka_t *rk,rd_kafka_UserScramCredentialAlteration_t **alte
         if (rd_kafka_AdminOptions_set_request_timeout(
                 options, 30 * 1000 /* 30s */, errstr, sizeof(errstr))) {
                 fprintf(stderr, "%% Failed to set timeout: %s\n", errstr);
-                return 1;
+                return;
         }
         /* Call the AlterUserScramCredentials Function*/
         rd_kafka_AlterUserScramCredentials(rk,alterations,alteration_cnt,options,queue);
-        rd_kafka_AdminOptions_destroy(options);
-        for(i=0;i<alteration_cnt;i++)
-                rd_kafka_UserScramCredentialAlteration_destroy(alterations[i]);
-
-         /* Wait for results */
+        /* Wait for results */
         event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
-
         if (!event) {
                 /* User hit Ctrl-C */
                 fprintf(stderr, "%% Cancelled by user\n");
 
         } else if (rd_kafka_event_error(event)) {
                 /* DeleteRecords request failed */
-                fprintf(stderr, "%% DeleteRecords failed: %s\n",
+                fprintf(stderr, "%% AlterUserScramCredentials failed: %s\n",
                         rd_kafka_event_error_string(event));
                 exitcode = 2;
 
@@ -197,7 +195,7 @@ static void Alter(rd_kafka_t *rk,rd_kafka_UserScramCredentialAlteration_t **alte
                 result  = rd_kafka_event_AlterUserScramCredentials_result(event);
                 size_t num_results = rd_kafka_AlterUserScramCredentials_result_get_count(result); 
                 size_t i;
-                printf("AlterUserScramCredentialsResults results:\n");
+                printf("AlterUserScramCredentials results [%d]:\n",num_results);
                 for (i = 0; i < num_results; i++){
                         
                         rd_kafka_UserScramCredentialAlterationResultElement_t *element = rd_kafka_AlterUserScramCredentials_result_get_element(result,i);
@@ -208,20 +206,25 @@ static void Alter(rd_kafka_t *rk,rd_kafka_UserScramCredentialAlteration_t **alte
                         rd_kafka_resp_err_t errorcode = rd_kafka_error_code(error);
                         if(errorcode){
                                 char *errstr = rd_kafka_error_string(error);
-                                printf("Username : %s , errorcode : %d , error-message : %s\n",username,errorcode,errstr);
+                                printf("        Username : %s , errorcode : %d , error-message : %s\n",username,errorcode,errstr);
                         }else{
-                                printf("Username : %s \n",username);
+                                printf("        Username : %s \n",username);
                         }
 
                 }
+                printf("AlterUserScramCredentials result END\n");
         }
         rd_kafka_event_destroy(event);
-
+        rd_kafka_AdminOptions_destroy(options);
+        
+        for(i=0;i<alteration_cnt;i++)
+                rd_kafka_UserScramCredentialAlteration_destroy(alterations[i]);
+       
 }
 int main(int argc, char **argv) {
         rd_kafka_conf_t *conf; /* Temporary configuration object */
         char errstr[512];      /* librdkafka API error reporting buffer */
-        const char *brokers;   /* Argument: broker list */
+        const char *brokers = "localhost:9092";   /* Argument: broker list */
         rd_kafka_t *rk;        /* Admin client instance */
         rd_kafka_AdminOptions_t *options;      /* Admin Options */
         rd_kafka_event_t *event;               /* Result event */
@@ -242,21 +245,24 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "%s\n", errstr);
                 return 1;
         }
-        if (rd_kafka_conf_set(conf, "security.protocol", "SASL_SSL", errstr,
-                              sizeof(errstr)) ||
-            rd_kafka_conf_set(conf, "sasl.mechanism", "SCRAM-SHA-256", errstr,
-                              sizeof(errstr)) ||
-            rd_kafka_conf_set(conf, "sasl.username", "broker", errstr,
-                              sizeof(errstr)) ||
-            rd_kafka_conf_set(conf, "sasl.password", "broker", errstr,
-                              sizeof(errstr)) ||
-            rd_kafka_conf_set(conf, "debug", "security", errstr,
-                              sizeof(errstr))) {
-                fprintf(stderr, "conf_set failed: %s\n", errstr);
-                return 1;
-        }
+        rd_kafka_conf_set(conf, "security.protocol", "SASL_PLAIN", errstr,
+                              sizeof(errstr));
 
-        rd_kafka_conf_set(conf, "debug", "admin,topic,metadata", NULL, 0);
+        // if (rd_kafka_conf_set(conf, "security.protocol", "SASL_SSL", errstr,
+        //                       sizeof(errstr)) ||
+        //     rd_kafka_conf_set(conf, "sasl.mechanism", "SCRAM-SHA-256", errstr,
+        //                       sizeof(errstr)) ||
+        //     rd_kafka_conf_set(conf, "sasl.username", "broker", errstr,
+        //                       sizeof(errstr)) ||
+        //     rd_kafka_conf_set(conf, "sasl.password", "broker", errstr,
+        //                       sizeof(errstr)) ||
+        //     rd_kafka_conf_set(conf, "debug", "security", errstr,
+        //                       sizeof(errstr))) {
+        //         fprintf(stderr, "conf_set failed: %s\n", errstr);
+        //         return 1;
+        // }
+
+        rd_kafka_conf_set(conf, "debug", "all", NULL, 0);
 
         /*
          * Create an admin client, it can be created using any client type,
@@ -280,18 +286,14 @@ int main(int argc, char **argv) {
 
         /* Signal handler for clean shutdown */
         signal(SIGINT, stop);
-
-        /* Describe All the User Scram Mechanisms*/
-        DescribeAll(rk);
-        return 0;
         /* First Upsert a mechanism*/
         char *username = "broker";
         int8_t mechanism = RD_KAFKA_SCRAM_MECHANISM_SHA_512;
-        int32_t iterations = 10;
-        char *salt = "salt";
-        char *password = "password";
+        int32_t iterations = 10000;
+        char *salt = "salt\0";
+        char *password = "password\0";
         
-        size_t num_alterations;
+        size_t num_alterations = 1;
         rd_kafka_UserScramCredentialAlteration_t *alterations[1];
 
         alterations[0] = rd_kafka_UserScramCredentialAlteration_new(username,RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_UPSERT);
@@ -302,23 +304,8 @@ int main(int argc, char **argv) {
 
         rd_kafka_UserScramCredentialAlteration_set_mechanism(alterations[0],mechanism);
         rd_kafka_UserScramCredentialAlteration_set_iterations(alterations[0],iterations);
-
         Alter(rk,alterations,1);
-        
-        /* Describe the user mechanisms */
         DescribeAll(rk);
-        
-        /* Delete the user mechanism */
-        alterations[0] = rd_kafka_UserScramCredentialAlteration_new(username,RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_DELETE);
-
-        rd_kafka_UserScramCredentialAlteration_set_mechanism(alterations[0],mechanism);
-        
-        Alter(rk,alterations,1);
-        /* Describe the user mechanisms */
-        DescribeAll(rk);
-        /* Destroy event object when we're done with it.
-         * Note: rd_kafka_event_destroy() allows a NULL event. */
-        
         signal(SIGINT, SIG_DFL);
 
         /* Destroy queue */
