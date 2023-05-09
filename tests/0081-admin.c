@@ -3654,8 +3654,8 @@ static void do_test_ListConsumerGroupOffsets(const char *what,
 
 static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
         rd_kafka_event_t *event;
-        char errstr[512];      /* librdkafka API error reporting buffer */
-        /* Set timeout (optional) */
+        char errstr[512];     
+        
         rd_kafka_AdminOptions_t *options = rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS);  
 
         if (rd_kafka_AdminOptions_set_request_timeout(
@@ -3664,14 +3664,13 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                 return ;
         }
         char *users[1];
-        users[0] = "broker";
-        /* Null Argument gives us all the users*/
+        users[0] = "testuserforscram";
         rd_kafka_DescribeUserScramCredentials(rk,users,1,options,queue);
         rd_kafka_AdminOptions_destroy(options);
-        /* Wait for results */
         event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
         if (rd_kafka_event_error(event)) {
                 /* Request failed */
+                TEST_FAIL("Event Errored : DescribeUserScramCredentials[ScramConfigAdmin]");
                 fprintf(stderr, "%% DescribeUserScramCredentials failed: %s\n",
                         rd_kafka_event_error_string(event));
         } else {
@@ -3682,6 +3681,8 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                 num_results = rd_kafka_DescribeUserScramCredentials_result_get_count(result);
                 rd_kafka_resp_err_t request_errorcode = rd_kafka_DescribeUserScramCredentials_result_get_errorcode(result);
                 /* Assert num_results should be 1 , request level error code should be 0*/
+                TEST_ASSERT(num_results==1,"There should be only 1 Result for a User !");
+                TEST_ASSERT(request_errorcode == 0,"Even if we send a Wrong Username, The request level error code should be zero!");
                 for (i = 0; i < num_results; i++){
                         rd_kafka_UserScramCredentialsDescription_t *description;
                         description = rd_kafka_DescribeUserScramCredentials_result_get_description(result,i);
@@ -3693,6 +3694,9 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                         
                         size_t num_credentials = rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo_cnt(description);
                         /* username should be broker , errorcode should be 91 and num_credentials should be 0 */
+                        TEST_ASSERT(strcmp(users[0],username)==0,"Username does not match !");
+                        TEST_ASSERT(((errorcode == 91) && (num_credentials == 0)),"Error-Code should be 91 as user does not exist and credentials count should be 0");
+                        
                 }
         }
         rd_kafka_event_destroy(event);
@@ -3721,6 +3725,7 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
         event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
         if (rd_kafka_event_error(event)) {
                 /* Request failed */
+                TEST_FAIL("Event Errored : AlterUserScramCredentials[ScramConfigAdmin]");
                 fprintf(stderr, "%% AlterUserScramCredentials failed: %s\n",
                         rd_kafka_event_error_string(event));
         } else {
@@ -3729,6 +3734,7 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                 size_t num_results = rd_kafka_AlterUserScramCredentials_result_get_count(result); 
                 size_t i;
                 /* num_results should be 1*/
+                TEST_ASSERT(num_results==1,"There should be only 1 Result for a User !");
                 for (i = 0; i < num_results; i++){
                         rd_kafka_UserScramCredentialAlterationResultElement_t *element = rd_kafka_AlterUserScramCredentials_result_get_element(result,i);
                         char *username;
@@ -3737,6 +3743,8 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                         error = rd_kafka_UserScramCredentialAlterationResultElement_get_error(element);
                         rd_kafka_resp_err_t errorcode = rd_kafka_error_code(error);
                         /* username should be broker and errorcode should be 0*/
+                        TEST_ASSERT(strcmp(users[0],username)==0,"Username does not match !");
+                        TEST_ASSERT(errorcode==0,"Error Code should be 0");
 
                 }
         }
@@ -3756,6 +3764,7 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
         event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
         if (rd_kafka_event_error(event)) {
                 /* Request failed */
+                TEST_FAIL("Event Errored : DescribeUserScramCredentials[ScramConfigAdmin]");
                 fprintf(stderr, "%% DescribeUserScramCredentials failed: %s\n",
                         rd_kafka_event_error_string(event));
         } else {
@@ -3766,6 +3775,8 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                 num_results = rd_kafka_DescribeUserScramCredentials_result_get_count(result);
                 rd_kafka_resp_err_t request_errorcode = rd_kafka_DescribeUserScramCredentials_result_get_errorcode(result);
                 /* Assert num_results should be 1 , request level error code should be 0*/
+                TEST_ASSERT(num_results==1,"There should be only 1 Result for a User !");
+                TEST_ASSERT(request_errorcode == 0,"Even if we send a Wrong Username, The request level error code should be zero!");
                 for (i = 0; i < num_results; i++){
                         rd_kafka_UserScramCredentialsDescription_t *description;
                         description = rd_kafka_DescribeUserScramCredentials_result_get_description(result,i);
@@ -3777,6 +3788,9 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                         
                         size_t num_credentials = rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo_cnt(description);
                         /* username should be broker , errorcode should be 0 and num_credentials should be 1 */
+                        TEST_ASSERT(strcmp(users[0],username)==0,"Username does not match !");
+                        TEST_ASSERT(((errorcode == 0) && (num_credentials == 1)),"Error-Code should be 0 as user does exist and credentials count should be 1");
+                        
                         size_t itr;
                         for(itr=0;itr<num_credentials;itr++){
                                 rd_kafka_ScramCredentialInfo_t *scram_credential = rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo(description,itr);
@@ -3785,6 +3799,7 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                                 mechanism = rd_kafka_ScramCredentialInfo_get_mechanism(scram_credential);
                                 iterations = rd_kafka_ScramCredentialInfo_get_iterations(scram_credential);
                                 /* mechanism should SHA 256 and iterations 10000 */
+                                TEST_ASSERT(((mechanism==RD_KAFKA_SCRAM_MECHANISM_SHA_256) && (iterations==10000)),"Mechanism should be SHA-256 and iterations should be 10000!");
                         }
                 }
         }
@@ -3808,6 +3823,7 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
         event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
         if (rd_kafka_event_error(event)) {
                 /* Request failed */
+                TEST_FAIL("Event Errored : AlterUserScramCredentials[ScramConfigAdmin]");
                 fprintf(stderr, "%% AlterUserScramCredentials failed: %s\n",
                         rd_kafka_event_error_string(event));
         } else {
@@ -3816,6 +3832,7 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                 size_t num_results = rd_kafka_AlterUserScramCredentials_result_get_count(result); 
                 size_t i;
                 /* num_results should be 1*/
+                TEST_ASSERT(num_results==1,"There should be only 1 Result for a User !");
                 for (i = 0; i < num_results; i++){
                         rd_kafka_UserScramCredentialAlterationResultElement_t *element = rd_kafka_AlterUserScramCredentials_result_get_element(result,i);
                         char *username;
@@ -3824,6 +3841,8 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                         error = rd_kafka_UserScramCredentialAlterationResultElement_get_error(element);
                         rd_kafka_resp_err_t errorcode = rd_kafka_error_code(error);
                         /* username should be broker and errorcode should be 0*/
+                        TEST_ASSERT(strcmp(users[0],username)==0,"Username does not match !");
+                        TEST_ASSERT(errorcode==0,"Error Code should be 0");
                 }
         }
 
@@ -3841,6 +3860,7 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
         event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
         if (rd_kafka_event_error(event)) {
                 /* Request failed */
+                TEST_FAIL("Event Errored : DescribeUserScramCredentials[ScramConfigAdmin]");
                 fprintf(stderr, "%% DescribeUserScramCredentials failed: %s\n",
                         rd_kafka_event_error_string(event));
         } else {
@@ -3851,6 +3871,8 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                 num_results = rd_kafka_DescribeUserScramCredentials_result_get_count(result);
                 rd_kafka_resp_err_t request_errorcode = rd_kafka_DescribeUserScramCredentials_result_get_errorcode(result);
                 /* Assert num_results should be 1 , request level error code should be 0*/
+                TEST_ASSERT(num_results==1,"There should be only 1 Result for a User !");
+                TEST_ASSERT(request_errorcode == 0,"Even if we send a Wrong Username, The request level error code should be zero!");
                 for (i = 0; i < num_results; i++){
                         rd_kafka_UserScramCredentialsDescription_t *description;
                         description = rd_kafka_DescribeUserScramCredentials_result_get_description(result,i);
@@ -3862,6 +3884,9 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                         
                         size_t num_credentials = rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo_cnt(description);
                         /* username should be broker , errorcode should be 91 and num_credentials should be 0 */
+                        TEST_ASSERT(strcmp(users[0],username)==0,"Username does not match !");
+                        TEST_ASSERT(((errorcode == 91) && (num_credentials == 0)),"Error-Code should be 91 as user does not exist and credentials count should be 0");
+                        
                 }
         }
         rd_kafka_event_destroy(event);
