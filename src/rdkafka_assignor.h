@@ -238,14 +238,34 @@ void rd_kafka_group_member_clear(rd_kafka_group_member_t *rkgm);
 rd_kafka_resp_err_t rd_kafka_range_assignor_init(rd_kafka_t *rk);
 rd_kafka_resp_err_t rd_kafka_roundrobin_assignor_init(rd_kafka_t *rk);
 rd_kafka_resp_err_t rd_kafka_sticky_assignor_init(rd_kafka_t *rk);
+rd_bool_t rd_kafka_use_rack_aware_assignment(
+    rd_kafka_assignor_topic_t **topics,
+    size_t topic_cnt,
+    rd_kafka_broker_id_rack_pair_t *broker_rack_pair,
+    size_t broker_rack_pair_cnt);
 
 /**
- * @name Common unit test functions to use across assignors.
+ * @name Common unit test functions, macros, and enums to use across assignors.
  *
  *
  *
  */
 
+/* Tests can be parametrized to contain either only broker racks, only consumer
+ * racks or both.*/
+typedef enum {
+        RD_KAFKA_RANGE_ASSIGNOR_UT_NO_BROKER_RACK           = 0,
+        RD_KAFKA_RANGE_ASSIGNOR_UT_NO_CONSUMER_RACK         = 1,
+        RD_KAFKA_RANGE_ASSIGNOR_UT_BROKER_AND_CONSUMER_RACK = 2,
+        RD_KAFKA_RANGE_ASSIGNOR_UT_CONFIG_CNT               = 3,
+} rd_kafka_assignor_ut_rack_config_t;
+
+
+rd_kafka_broker_id_rack_pair_t *
+ut_compute_broker_rack_pairs(int num_brokers,
+                             int num_broker_racks,
+                             rd_kafkap_str_t *all_racks[],
+                             size_t all_racks_cnt);
 
 void ut_set_owned(rd_kafka_group_member_t *rkgm);
 
@@ -314,6 +334,76 @@ int isFullyBalanced0(const char *function,
                         return 1;                                              \
         } while (0)
 
+/* Helper macro to initialize a consumer with or without a rack depending on the
+ * value of parametrization. */
+#define ut_initMemberConditionalRack(member_ptr, member_id, rack,              \
+                                     parametrization, ...)                     \
+        do {                                                                   \
+                if (parametrization ==                                         \
+                    RD_KAFKA_RANGE_ASSIGNOR_UT_NO_CONSUMER_RACK) {             \
+                        ut_init_member(member_ptr, member_id, __VA_ARGS__);    \
+                } else {                                                       \
+                        ut_init_member_with_rackv(member_ptr, member_id, rack, \
+                                                  __VA_ARGS__);                \
+                }                                                              \
+        } while (0)
+
+/* Helper macro to initialize rd_kafka_metadata_t* with or without replicas
+ * depending on the value of parametrization. This accepts variadic arguments
+ * for topics. */
+#define ut_initMetadataConditionalRack(                                                \
+    metadataPtr, brokerPairPtr, brokerPairCntPtr, replication_factor,                  \
+    num_broker_racks, all_racks, all_racks_cnt, parametrization, ...)                  \
+        do {                                                                           \
+                int num_brokers = num_broker_racks > 0                                 \
+                                      ? replication_factor * num_broker_racks          \
+                                      : replication_factor;                            \
+                if (parametrization ==                                                 \
+                    RD_KAFKA_RANGE_ASSIGNOR_UT_NO_BROKER_RACK) {                       \
+                        *(metadataPtr) =                                               \
+                            rd_kafka_metadata_new_topic_mockv(__VA_ARGS__);            \
+                        *(brokerPairPtr)    = NULL;                                    \
+                        *(brokerPairCntPtr) = 0;                                       \
+                } else {                                                               \
+                        *(metadataPtr) =                                               \
+                            rd_kafka_metadata_new_topic_with_partition_replicas_mockv( \
+                                replication_factor, num_brokers, __VA_ARGS__);         \
+                        *(brokerPairPtr) = ut_compute_broker_rack_pairs(               \
+                            num_brokers, num_broker_racks, all_racks,                  \
+                            all_racks_cnt);                                            \
+                        *(brokerPairCntPtr) = num_brokers;                             \
+                }                                                                      \
+        } while (0)
+
+
+/* Helper macro to initialize rd_kafka_metadata_t* with or without replicas
+ * depending on the value of parametrization. This accepts a list of topics,
+ * rather than being variadic.
+ */
+#define ut_initMetadataConditionalRack0(                                       \
+    metadataPtr, brokerPairPtr, brokerPairCntPtr, replication_factor,          \
+    num_broker_racks, all_racks, all_racks_cnt, parametrization, topics,       \
+    topic_cnt)                                                                 \
+        do {                                                                   \
+                int num_brokers = num_broker_racks > 0                         \
+                                      ? replication_factor * num_broker_racks  \
+                                      : replication_factor;                    \
+                if (parametrization ==                                         \
+                    RD_KAFKA_RANGE_ASSIGNOR_UT_NO_BROKER_RACK) {               \
+                        *(metadataPtr) = rd_kafka_metadata_new_topic_mock(     \
+                            topics, topic_cnt, -1, 0);                         \
+                        *(brokerPairPtr)    = NULL;                            \
+                        *(brokerPairCntPtr) = 0;                               \
+                } else {                                                       \
+                        *(metadataPtr) = rd_kafka_metadata_new_topic_mock(     \
+                            topics, topic_cnt, replication_factor,             \
+                            num_brokers);                                      \
+                        *(brokerPairPtr) = ut_compute_broker_rack_pairs(       \
+                            num_brokers, num_broker_racks, all_racks,          \
+                            all_racks_cnt);                                    \
+                        *(brokerPairCntPtr) = num_brokers;                     \
+                }                                                              \
+        } while (0)
 
 
 #endif /* _RDKAFKA_ASSIGNOR_H_ */

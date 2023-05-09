@@ -1441,9 +1441,10 @@ rd_kafka_metadata_new_topic_mock(const rd_kafka_metadata_topic_t *topics,
             sizeof(*md) + (sizeof(*md->topics) * topic_cnt) + topic_names_size +
                 (64 /*topic name size..*/ * topic_cnt) +
                 (sizeof(*md->topics[0].partitions) * total_partition_cnt) +
-                (replication_factor > 0
-                     ? replication_factor * total_partition_cnt * sizeof(int)
-                     : 0),
+                /* roundup since writes to tbuf are aligned in strides of 8. */
+                (replication_factor > 0 ? RD_ROUNDUP(replication_factor, 8) *
+                                              total_partition_cnt * sizeof(int)
+                                        : 0),
             1 /*assert on fail*/);
 
         md = rd_tmpabuf_alloc(&tbuf, sizeof(*md));
