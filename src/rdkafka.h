@@ -1007,7 +1007,6 @@ typedef struct rd_kafka_topic_partition_s {
                                   *   rd_kafka_t INSTANCES. */
 } rd_kafka_topic_partition_t;
 
-
 /**
  * @brief Destroy a rd_kafka_topic_partition_t.
  * @remark This must not be called for elements in a topic partition list.

@@ -89,9 +89,10 @@ static void DescribeAll(rd_kafka_t *rk){
                 fprintf(stderr, "%% Failed to set timeout: %s\n", errstr);
                 return ;
         }
-        
+        char *username[1];
+        username[0] = "broker";
         /* Null Argument gives us all the users*/
-        rd_kafka_DescribeUserScramCredentials(rk,NULL,0,options,queue);
+        rd_kafka_DescribeUserScramCredentials(rk,username,1,options,queue);
         rd_kafka_AdminOptions_destroy(options);
 
 
@@ -248,22 +249,6 @@ int main(int argc, char **argv) {
                 return 1;
         }
         
-        // if (rd_kafka_conf_set(conf, "security.protocol", "SASL_SSL", errstr,
-        //                       sizeof(errstr)) ||
-        //     rd_kafka_conf_set(conf, "sasl.mechanism", "SCRAM-SHA-256", errstr,
-        //                       sizeof(errstr)) ||
-        //     rd_kafka_conf_set(conf, "sasl.username", "broker", errstr,
-        //                       sizeof(errstr)) ||
-        //     rd_kafka_conf_set(conf, "sasl.password", "broker", errstr,
-        //                       sizeof(errstr)) ||
-        //     rd_kafka_conf_set(conf, "debug", "security", errstr,
-        //                       sizeof(errstr))) {
-        //         fprintf(stderr, "conf_set failed: %s\n", errstr);
-        //         return 1;
-        // }
-
-        // rd_kafka_conf_set(conf, "debug", "all", NULL, 0);
-
         /*
          * Create an admin client, it can be created using any client type,
          * so we choose producer since it requires no extra configuration

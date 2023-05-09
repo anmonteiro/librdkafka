@@ -3652,6 +3652,223 @@ static void do_test_ListConsumerGroupOffsets(const char *what,
         SUB_TEST_PASS();
 }
 
+static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
+        rd_kafka_event_t *event;
+        char errstr[512];      /* librdkafka API error reporting buffer */
+        /* Set timeout (optional) */
+        rd_kafka_AdminOptions_t *options = rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS);  
+
+        if (rd_kafka_AdminOptions_set_request_timeout(
+                options, 30 * 1000 /* 30s */, errstr, sizeof(errstr))) {
+                fprintf(stderr, "%% Failed to set timeout: %s\n", errstr);
+                return ;
+        }
+        char *users[1];
+        users[0] = "broker";
+        /* Null Argument gives us all the users*/
+        rd_kafka_DescribeUserScramCredentials(rk,users,1,options,queue);
+        rd_kafka_AdminOptions_destroy(options);
+        /* Wait for results */
+        event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
+        if (rd_kafka_event_error(event)) {
+                /* Request failed */
+                fprintf(stderr, "%% DescribeUserScramCredentials failed: %s\n",
+                        rd_kafka_event_error_string(event));
+        } else {
+                const rd_kafka_DescribeUserScramCredentials_result_t *result;
+                size_t num_results;
+                size_t i;
+                result  = rd_kafka_event_DescribeUserScramCredentials_result(event);
+                num_results = rd_kafka_DescribeUserScramCredentials_result_get_count(result);
+                rd_kafka_resp_err_t request_errorcode = rd_kafka_DescribeUserScramCredentials_result_get_errorcode(result);
+                /* Assert num_results should be 1 , request level error code should be 0*/
+                for (i = 0; i < num_results; i++){
+                        rd_kafka_UserScramCredentialsDescription_t *description;
+                        description = rd_kafka_DescribeUserScramCredentials_result_get_description(result,i);
+                        char *username;
+                        rd_kafka_error_t *error;
+                        username = rd_kafka_UserScramCredentialsDescription_get_user(description);
+                        error = rd_kafka_UserScramCredentialsDescription_get_error(description);
+                        rd_kafka_resp_err_t errorcode = rd_kafka_error_code(error);
+                        
+                        size_t num_credentials = rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo_cnt(description);
+                        /* username should be broker , errorcode should be 91 and num_credentials should be 0 */
+                }
+        }
+        rd_kafka_event_destroy(event);
+
+        rd_kafka_UserScramCredentialAlteration_t *alterations[1];
+        alterations[0] = rd_kafka_UserScramCredentialAlteration_new(users[0],RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_UPSERT);
+        rd_kafka_UserScramCredentialAlteration_set_salt(alterations[0],"salt");
+
+        rd_kafka_UserScramCredentialAlteration_set_password(alterations[0],"password");
+
+        rd_kafka_UserScramCredentialAlteration_set_mechanism(alterations[0],RD_KAFKA_SCRAM_MECHANISM_SHA_256);
+        rd_kafka_UserScramCredentialAlteration_set_iterations(alterations[0],10000);
+        
+        rd_kafka_AdminOptions_t *options =
+            rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_ALTERUSERSCRAMCREDENTIALS);
+
+        if (rd_kafka_AdminOptions_set_request_timeout(
+                options, 30 * 1000 /* 30s */, errstr, sizeof(errstr))) {
+                fprintf(stderr, "%% Failed to set timeout: %s\n", errstr);
+                return;
+        }
+        /* Call the AlterUserScramCredentials Function*/
+        rd_kafka_AlterUserScramCredentials(rk,alterations,1,options,queue);
+        rd_kafka_AdminOptions_destroy(options);
+        /* Wait for results */
+        event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
+        if (rd_kafka_event_error(event)) {
+                /* Request failed */
+                fprintf(stderr, "%% AlterUserScramCredentials failed: %s\n",
+                        rd_kafka_event_error_string(event));
+        } else {
+                const rd_kafka_AlterUserScramCredentials_result_t *result;
+                result  = rd_kafka_event_AlterUserScramCredentials_result(event);
+                size_t num_results = rd_kafka_AlterUserScramCredentials_result_get_count(result); 
+                size_t i;
+                /* num_results should be 1*/
+                for (i = 0; i < num_results; i++){
+                        rd_kafka_UserScramCredentialAlterationResultElement_t *element = rd_kafka_AlterUserScramCredentials_result_get_element(result,i);
+                        char *username;
+                        rd_kafka_error_t *error;
+                        username = rd_kafka_UserScramCredentialAlterationResultElement_get_user(element);
+                        error = rd_kafka_UserScramCredentialAlterationResultElement_get_error(element);
+                        rd_kafka_resp_err_t errorcode = rd_kafka_error_code(error);
+                        /* username should be broker and errorcode should be 0*/
+
+                }
+        }
+        rd_kafka_event_destroy(event);
+        rd_kafka_UserScramCredentialAlteration_destroy(alterations[0]);
+
+        rd_kafka_AdminOptions_t *options = rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS);  
+
+        if (rd_kafka_AdminOptions_set_request_timeout(
+                options, 30 * 1000 /* 30s */, errstr, sizeof(errstr))) {
+                fprintf(stderr, "%% Failed to set timeout: %s\n", errstr);
+                return ;
+        }
+        rd_kafka_DescribeUserScramCredentials(rk,users,1,options,queue);
+        rd_kafka_AdminOptions_destroy(options);
+        /* Wait for results */
+        event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
+        if (rd_kafka_event_error(event)) {
+                /* Request failed */
+                fprintf(stderr, "%% DescribeUserScramCredentials failed: %s\n",
+                        rd_kafka_event_error_string(event));
+        } else {
+                const rd_kafka_DescribeUserScramCredentials_result_t *result;
+                size_t num_results;
+                size_t i;
+                result  = rd_kafka_event_DescribeUserScramCredentials_result(event);
+                num_results = rd_kafka_DescribeUserScramCredentials_result_get_count(result);
+                rd_kafka_resp_err_t request_errorcode = rd_kafka_DescribeUserScramCredentials_result_get_errorcode(result);
+                /* Assert num_results should be 1 , request level error code should be 0*/
+                for (i = 0; i < num_results; i++){
+                        rd_kafka_UserScramCredentialsDescription_t *description;
+                        description = rd_kafka_DescribeUserScramCredentials_result_get_description(result,i);
+                        char *username;
+                        rd_kafka_error_t *error;
+                        username = rd_kafka_UserScramCredentialsDescription_get_user(description);
+                        error = rd_kafka_UserScramCredentialsDescription_get_error(description);
+                        rd_kafka_resp_err_t errorcode = rd_kafka_error_code(error);
+                        
+                        size_t num_credentials = rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo_cnt(description);
+                        /* username should be broker , errorcode should be 0 and num_credentials should be 1 */
+                        size_t itr;
+                        for(itr=0;itr<num_credentials;itr++){
+                                rd_kafka_ScramCredentialInfo_t *scram_credential = rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo(description,itr);
+                                rd_kafka_ScramMechanism_t mechanism;
+                                int32_t iterations;
+                                mechanism = rd_kafka_ScramCredentialInfo_get_mechanism(scram_credential);
+                                iterations = rd_kafka_ScramCredentialInfo_get_iterations(scram_credential);
+                                /* mechanism should SHA 256 and iterations 10000 */
+                        }
+                }
+        }
+        rd_kafka_event_destroy(event);
+
+        alterations[0] = rd_kafka_UserScramCredentialAlteration_new(users[0],RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_DELETE);
+        rd_kafka_UserScramCredentialAlteration_set_mechanism(alterations[0],RD_KAFKA_SCRAM_MECHANISM_SHA_256);
+
+        rd_kafka_AdminOptions_t *options =
+            rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_ALTERUSERSCRAMCREDENTIALS);
+
+        if (rd_kafka_AdminOptions_set_request_timeout(
+                options, 30 * 1000 /* 30s */, errstr, sizeof(errstr))) {
+                fprintf(stderr, "%% Failed to set timeout: %s\n", errstr);
+                return;
+        }
+        /* Call the AlterUserScramCredentials Function*/
+        rd_kafka_AlterUserScramCredentials(rk,alterations,1,options,queue);
+        rd_kafka_AdminOptions_destroy(options);
+        /* Wait for results */
+        event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
+        if (rd_kafka_event_error(event)) {
+                /* Request failed */
+                fprintf(stderr, "%% AlterUserScramCredentials failed: %s\n",
+                        rd_kafka_event_error_string(event));
+        } else {
+                const rd_kafka_AlterUserScramCredentials_result_t *result;
+                result  = rd_kafka_event_AlterUserScramCredentials_result(event);
+                size_t num_results = rd_kafka_AlterUserScramCredentials_result_get_count(result); 
+                size_t i;
+                /* num_results should be 1*/
+                for (i = 0; i < num_results; i++){
+                        rd_kafka_UserScramCredentialAlterationResultElement_t *element = rd_kafka_AlterUserScramCredentials_result_get_element(result,i);
+                        char *username;
+                        rd_kafka_error_t *error;
+                        username = rd_kafka_UserScramCredentialAlterationResultElement_get_user(element);
+                        error = rd_kafka_UserScramCredentialAlterationResultElement_get_error(element);
+                        rd_kafka_resp_err_t errorcode = rd_kafka_error_code(error);
+                        /* username should be broker and errorcode should be 0*/
+                }
+        }
+
+        rd_kafka_AdminOptions_t *options = rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS);  
+
+        if (rd_kafka_AdminOptions_set_request_timeout(
+                options, 30 * 1000 /* 30s */, errstr, sizeof(errstr))) {
+                fprintf(stderr, "%% Failed to set timeout: %s\n", errstr);
+                return ;
+        }
+        /* Null Argument gives us all the users*/
+        rd_kafka_DescribeUserScramCredentials(rk,users,1,options,queue);
+        rd_kafka_AdminOptions_destroy(options);
+        /* Wait for results */
+        event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
+        if (rd_kafka_event_error(event)) {
+                /* Request failed */
+                fprintf(stderr, "%% DescribeUserScramCredentials failed: %s\n",
+                        rd_kafka_event_error_string(event));
+        } else {
+                const rd_kafka_DescribeUserScramCredentials_result_t *result;
+                size_t num_results;
+                size_t i;
+                result  = rd_kafka_event_DescribeUserScramCredentials_result(event);
+                num_results = rd_kafka_DescribeUserScramCredentials_result_get_count(result);
+                rd_kafka_resp_err_t request_errorcode = rd_kafka_DescribeUserScramCredentials_result_get_errorcode(result);
+                /* Assert num_results should be 1 , request level error code should be 0*/
+                for (i = 0; i < num_results; i++){
+                        rd_kafka_UserScramCredentialsDescription_t *description;
+                        description = rd_kafka_DescribeUserScramCredentials_result_get_description(result,i);
+                        char *username;
+                        rd_kafka_error_t *error;
+                        username = rd_kafka_UserScramCredentialsDescription_get_user(description);
+                        error = rd_kafka_UserScramCredentialsDescription_get_error(description);
+                        rd_kafka_resp_err_t errorcode = rd_kafka_error_code(error);
+                        
+                        size_t num_credentials = rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo_cnt(description);
+                        /* username should be broker , errorcode should be 91 and num_credentials should be 0 */
+                }
+        }
+        rd_kafka_event_destroy(event);
+
+       
+}
+
 static void do_test_apis(rd_kafka_type_t cltype) {
         rd_kafka_t *rk;
         rd_kafka_conf_t *conf;
