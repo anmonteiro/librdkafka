@@ -98,13 +98,12 @@ static void DescribeAll(rd_kafka_t *rk){
 
         /* Wait for results */
         event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
-        printf("We got the event !\n");
         if (!event) {
                 /* User hit Ctrl-C */
                 fprintf(stderr, "%% Cancelled by user\n");
 
         } else if (rd_kafka_event_error(event)) {
-                /* DeleteRecords request failed */
+                /* Request failed */
                 fprintf(stderr, "%% DescribeUserScramCredentials failed: %s\n",
                         rd_kafka_event_error_string(event));
                 exitcode = 2;
@@ -120,7 +119,7 @@ static void DescribeAll(rd_kafka_t *rk){
                         char *errormsg = rd_kafka_DescribeUserScramCredentials_result_get_errormessage(result);
                         printf("Request Level Error Message : %s \n",errormsg);
                 }
-                printf("DescribeUserScramCredentialsResults results[%d] [Error Code : %d]:\n",num_results,request_errorcode);
+                printf("DescribeUserScramCredentials results[%d] [Error Code : %d]:\n",num_results,request_errorcode);
                 for (i = 0; i < num_results; i++){
                         rd_kafka_UserScramCredentialsDescription_t *description;
                         description = rd_kafka_DescribeUserScramCredentials_result_get_description(result,i);
@@ -147,10 +146,13 @@ static void DescribeAll(rd_kafka_t *rk){
                                 {
                                 case RD_KAFKA_SCRAM_MECHANISM_UNKNOWN:
                                         printf("                Mechanism is UNKNOWN\n");
+                                        break;
                                 case RD_KAFKA_SCRAM_MECHANISM_SHA_256:
                                         printf("                Mechanism is SCRAM-SHA-256\n");
+                                        break;
                                 case RD_KAFKA_SCRAM_MECHANISM_SHA_512:
                                         printf("                Mechanism is SCRAM-SHA-512\n");
+                                        break;
                                 }
                                 printf("                Iterations are %d\n",iterations);
                         }
@@ -185,7 +187,7 @@ static void Alter(rd_kafka_t *rk,rd_kafka_UserScramCredentialAlteration_t **alte
                 fprintf(stderr, "%% Cancelled by user\n");
 
         } else if (rd_kafka_event_error(event)) {
-                /* DeleteRecords request failed */
+                /* Request failed */
                 fprintf(stderr, "%% AlterUserScramCredentials failed: %s\n",
                         rd_kafka_event_error_string(event));
                 exitcode = 2;
@@ -245,9 +247,7 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "%s\n", errstr);
                 return 1;
         }
-        rd_kafka_conf_set(conf, "security.protocol", "SASL_PLAIN", errstr,
-                              sizeof(errstr));
-
+        
         // if (rd_kafka_conf_set(conf, "security.protocol", "SASL_SSL", errstr,
         //                       sizeof(errstr)) ||
         //     rd_kafka_conf_set(conf, "sasl.mechanism", "SCRAM-SHA-256", errstr,
@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
         //         return 1;
         // }
 
-        rd_kafka_conf_set(conf, "debug", "all", NULL, 0);
+        // rd_kafka_conf_set(conf, "debug", "all", NULL, 0);
 
         /*
          * Create an admin client, it can be created using any client type,
@@ -286,12 +286,14 @@ int main(int argc, char **argv) {
 
         /* Signal handler for clean shutdown */
         signal(SIGINT, stop);
+        /* Describe all the mechanisms */
+        DescribeAll(rk);
         /* First Upsert a mechanism*/
         char *username = "broker";
-        int8_t mechanism = RD_KAFKA_SCRAM_MECHANISM_SHA_512;
+        int8_t mechanism = RD_KAFKA_SCRAM_MECHANISM_SHA_256;
         int32_t iterations = 10000;
-        char *salt = "salt\0";
-        char *password = "password\0";
+        char *salt = "salt";
+        char *password = "password";
         
         size_t num_alterations = 1;
         rd_kafka_UserScramCredentialAlteration_t *alterations[1];
@@ -304,8 +306,17 @@ int main(int argc, char **argv) {
 
         rd_kafka_UserScramCredentialAlteration_set_mechanism(alterations[0],mechanism);
         rd_kafka_UserScramCredentialAlteration_set_iterations(alterations[0],iterations);
+        
         Alter(rk,alterations,1);
+        /* Describe all the mechanisms */
         DescribeAll(rk);
+        /* Delete the upserted mechanism*/
+        alterations[0] = rd_kafka_UserScramCredentialAlteration_new(username,RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_DELETE);
+        rd_kafka_UserScramCredentialAlteration_set_mechanism(alterations[0],mechanism);
+        Alter(rk,alterations,1);
+        /* Describe all the mechanisms */
+        DescribeAll(rk);
+        
         signal(SIGINT, SIG_DFL);
 
         /* Destroy queue */
