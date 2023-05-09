@@ -997,7 +997,7 @@ static int setupRackAwareAssignment(rd_kafka_t *rk,
         broker_rack_pair_cnt = num_brokers;
 
         for (i = 0; i < member_cnt; i++) {
-                char member_id[10] = {};
+                char member_id[10];
                 snprintf(member_id, 10, "consumer%d", (int)(i + 1));
                 ut_init_member_with_rack(
                     &members[i], member_id, ALL_RACKS[consumer_racks[i]],
