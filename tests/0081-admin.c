@@ -3702,13 +3702,11 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
         rd_kafka_event_destroy(event);
 
         rd_kafka_UserScramCredentialAlteration_t *alterations[1];
-        alterations[0] = rd_kafka_UserScramCredentialAlteration_new(users[0],RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_UPSERT);
-        rd_kafka_UserScramCredentialAlteration_set_salt(alterations[0],"salt");
-
-        rd_kafka_UserScramCredentialAlteration_set_password(alterations[0],"password");
-
-        rd_kafka_UserScramCredentialAlteration_set_mechanism(alterations[0],RD_KAFKA_SCRAM_MECHANISM_SHA_256);
-        rd_kafka_UserScramCredentialAlteration_set_iterations(alterations[0],10000);
+        char *salt = "salt";
+        char *password = "password";
+        rd_kafka_ScramMechanism_t mechanism = RD_KAFKA_SCRAM_MECHANISM_SHA_256;
+        int32_t iterations = 10000;
+        alterations[0] = rd_kafka_UserScramCredentialUpsertion_new(users[0],salt,password,mechanism,iterations);
         
         rd_kafka_AdminOptions_t *options =
             rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_ALTERUSERSCRAMCREDENTIALS);
@@ -3805,8 +3803,7 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
         }
         rd_kafka_event_destroy(event);
 
-        alterations[0] = rd_kafka_UserScramCredentialAlteration_new(users[0],RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_DELETE);
-        rd_kafka_UserScramCredentialAlteration_set_mechanism(alterations[0],RD_KAFKA_SCRAM_MECHANISM_SHA_256);
+        alterations[0] = rd_kafka_UserScramCredentialDeletion_new(users[0],mechanism);
 
         rd_kafka_AdminOptions_t *options =
             rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_ALTERUSERSCRAMCREDENTIALS);
@@ -3880,13 +3877,11 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                         rd_kafka_error_t *error;
                         username = rd_kafka_UserScramCredentialsDescription_get_user(description);
                         error = rd_kafka_UserScramCredentialsDescription_get_error(description);
-                        rd_kafka_resp_err_t errorcode = rd_kafka_error_code(error);
-                        
+                        rd_kafka_resp_err_t errorcode = rd_kafka_error_code(error);     
                         size_t num_credentials = rd_kafka_UserScramCredentialsDescription_get_scramcredentialinfo_cnt(description);
                         /* username should be broker , errorcode should be 91 and num_credentials should be 0 */
                         TEST_ASSERT(strcmp(users[0],username)==0,"Username does not match !");
                         TEST_ASSERT(((errorcode == 91) && (num_credentials == 0)),"Error-Code should be 91 as user does not exist and credentials count should be 0");
-                        
                 }
         }
         rd_kafka_event_destroy(event);

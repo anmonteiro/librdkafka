@@ -892,14 +892,6 @@ typedef enum rd_kafka_ScramMechanism_s {
 /* ScramCredentialInfo */
 typedef struct rd_kafka_ScramCredentialInfo_s rd_kafka_ScramCredentialInfo_t;
 
-/* Sets the mechanism of a given ScramCredentialInfo pointer */
-RD_EXPORT
-void rd_kafka_ScramCredentialInfo_set_mechanism(rd_kafka_ScramCredentialInfo_t *scram_credential_info,rd_kafka_ScramMechanism_t mechanism);
-
-/* Sets the iterations of a given ScramCredentialInfo pointer */
-RD_EXPORT
-void rd_kafka_ScramCredentialInfo_set_iterations(rd_kafka_ScramCredentialInfo_t *scram_credential_info,int32_t iterations);
-
 /* Returns the mechanism of a given ScramCredentialInfo pointer */
 RD_EXPORT
 rd_kafka_ScramMechanism_t rd_kafka_ScramCredentialInfo_get_mechanism(rd_kafka_ScramCredentialInfo_t *scram_credential_info);
@@ -937,9 +929,16 @@ typedef enum rd_kafka_UserScramCredentialAlteration_type_s {
 
 typedef struct rd_kafka_UserScramCredentialAlteration_s rd_kafka_UserScramCredentialAlteration_t;
 
-/* Allocates a new UserScramCredentialAlteration with the mandatory fields such as user and type */
+
+/* Allocates a new UserScramCredentialUpsertion with the mandatory fields */
 RD_EXPORT
-rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialAlteration_new(const char *username,rd_kafka_UserScramCredentialAlteration_type_t type);
+rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialUpsertion_new(const char *username,const char *salt,const char *password,rd_kafka_ScramMechanism_t mechanism,int32_t iterations);
+
+
+/* Allocates a new UserScramCredentialDeletion with the mandatory fields */
+RD_EXPORT
+rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialDeletion_new(const char *username,rd_kafka_ScramMechanism_t mechanism);
+
 
 /* Destroys a UserScramCredentialAlteration given its pointer */
 RD_EXPORT
@@ -948,22 +947,6 @@ void rd_kafka_UserScramCredentialAlteration_destroy(rd_kafka_UserScramCredential
 /* Copies and returns the copied pointer of a UserScramCredentialAlteration */
 RD_EXPORT
 rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialAlteration_copy(rd_kafka_UserScramCredentialAlteration_t *alteration);
-
-/* Sets the salt for a UserScramCredentialAlteration */
-RD_EXPORT
-void rd_kafka_UserScramCredentialAlteration_set_salt(rd_kafka_UserScramCredentialAlteration_t *alteration,const char *salt);
-
-/* Sets the password for a UserScramCredentialAlteration */
-RD_EXPORT
-void rd_kafka_UserScramCredentialAlteration_set_password(rd_kafka_UserScramCredentialAlteration_t *alteration,const char *password);
-
-/* Sets the mechanism for a UserScramCredentialAlteration */
-RD_EXPORT
-void rd_kafka_UserScramCredentialAlteration_set_mechanism(rd_kafka_UserScramCredentialAlteration_t *alteration,rd_kafka_ScramMechanism_t mechanism);
-
-/* Sets the iterations for a UserScramCredentialAlteration */
-RD_EXPORT
-void rd_kafka_UserScramCredentialAlteration_set_iterations(rd_kafka_UserScramCredentialAlteration_t *alteration,int32_t iterations);
 
 typedef struct rd_kafka_UserScramCredentialAlterationResultElement_s rd_kafka_UserScramCredentialAlterationResultElement_t;
 

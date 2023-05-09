@@ -479,8 +479,6 @@ struct rd_kafka_ConsumerGroupDescription_s {
 
 struct rd_kafka_ScramCredentialInfo_s;
 
-void rd_kafka_ScramCredentialInfo_set_mechanism(rd_kafka_ScramCredentialInfo_t *scram_credential_info,rd_kafka_ScramMechanism_t mechanism);
-void rd_kafka_ScramCredentialInfo_set_iterations(rd_kafka_ScramCredentialInfo_t *scram_credential_info,int32_t iterations);
 rd_kafka_ScramMechanism_t rd_kafka_ScramCredentialInfo_get_mechanism(rd_kafka_ScramCredentialInfo_t *scram_credential_info);
 int32_t rd_kafka_ScramCredentialInfo_get_iterations(rd_kafka_ScramCredentialInfo_t *scram_credential_info);
 struct rd_kafka_UserScramCredentialsDescription_s ;
@@ -499,19 +497,14 @@ rd_kafka_UserScramCredentialsDescription_t *rd_kafka_DescribeUserScramCredential
 
 
 struct rd_kafka_UserScramCredentialAlteration_s ;
-rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialAlteration_new(const char *username,rd_kafka_UserScramCredentialAlteration_type_t type);
+
+rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialUpsertion_new(const char *username,const char *salt,const char *password,rd_kafka_ScramMechanism_t mechanism,int32_t iterations);
+
+rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialDeletion_new(const char *username,rd_kafka_ScramMechanism_t mechanism);
 
 void rd_kafka_UserScramCredentialAlteration_destroy(rd_kafka_UserScramCredentialAlteration_t *alteration);
 
 rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialAlteration_copy(rd_kafka_UserScramCredentialAlteration_t *alteration);
-
-void rd_kafka_UserScramCredentialAlteration_set_salt(rd_kafka_UserScramCredentialAlteration_t *alteration,const char *salt);
-
-void rd_kafka_UserScramCredentialAlteration_set_password(rd_kafka_UserScramCredentialAlteration_t *alteration,const char *password);
-
-void rd_kafka_UserScramCredentialAlteration_set_mechanism(rd_kafka_UserScramCredentialAlteration_t *alteration,rd_kafka_ScramMechanism_t mechanism);
-
-void rd_kafka_UserScramCredentialAlteration_set_iterations(rd_kafka_UserScramCredentialAlteration_t *alteration,int32_t iterations);
 
 struct rd_kafka_UserScramCredentialAlterationResultElement_s ;
 
