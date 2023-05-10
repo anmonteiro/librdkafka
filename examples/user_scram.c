@@ -80,7 +80,7 @@ int64_t parse_int(const char *what, const char *str) {
 static void DescribeAll(rd_kafka_t *rk){
         rd_kafka_event_t *event;
         char errstr[512];      /* librdkafka API error reporting buffer */
-        /* Set timeout (optional) */
+        
         rd_kafka_AdminOptions_t *options = rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS);  
 
         if (rd_kafka_AdminOptions_set_request_timeout(
@@ -92,6 +92,7 @@ static void DescribeAll(rd_kafka_t *rk){
         /* Null Argument gives us all the users*/
         rd_kafka_DescribeUserScramCredentials(rk,NULL,0,options,queue);
         rd_kafka_AdminOptions_destroy(options);
+
         /* Wait for results */
         event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
         if (!event) {
@@ -153,17 +154,15 @@ static void DescribeAll(rd_kafka_t *rk){
 
                 }
                 printf("DescribeUserScramCredentials result END\n");
-                printf("this is printed");
         }
         rd_kafka_event_destroy(event);
-        printf("end of describeAll");
 }
 
-static void Alter(rd_kafka_t *rk,rd_kafka_UserScramCredentialAlteration_t **alterations,size_t alteration_cnt){
+void Alter(rd_kafka_t *rk,rd_kafka_UserScramCredentialAlteration_t **alterations,size_t alteration_cnt){
         rd_kafka_event_t *event;
-        int exitcode = 0;
         char errstr[512];      /* librdkafka API error reporting buffer */
         size_t i;
+
         /* Set timeout (optional) */
         rd_kafka_AdminOptions_t *options =
             rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_ALTERUSERSCRAMCREDENTIALS);
@@ -173,11 +172,11 @@ static void Alter(rd_kafka_t *rk,rd_kafka_UserScramCredentialAlteration_t **alte
                 fprintf(stderr, "%% Failed to set timeout: %s\n", errstr);
                 return;
         }
-        printf("Correct");
+
         /* Call the AlterUserScramCredentials Function*/
-        rd_kafka_AlterUserScramCredentials(rk,alterations,alteration_cnt,options,queue);
+        rd_kafka_AlterUserScramCredentials(rk,alterations,alteration_cnt,NULL,queue);
         rd_kafka_AdminOptions_destroy(options);
-        printf("We are here1");
+
         /* Wait for results */
         event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
         if (!event) {
@@ -188,16 +187,13 @@ static void Alter(rd_kafka_t *rk,rd_kafka_UserScramCredentialAlteration_t **alte
                 /* Request failed */
                 fprintf(stderr, "%% AlterUserScramCredentials failed: %s\n",
                         rd_kafka_event_error_string(event));
-                exitcode = 2;
 
         } else {
-                const rd_kafka_AlterUserScramCredentials_result_t *result;
-                result  = rd_kafka_event_AlterUserScramCredentials_result(event);
+                const rd_kafka_AlterUserScramCredentials_result_t *result = rd_kafka_event_AlterUserScramCredentials_result(event);
                 size_t num_results = rd_kafka_AlterUserScramCredentials_result_get_count(result); 
                 size_t i;
                 printf("AlterUserScramCredentials results [%d]:\n",num_results);
                 for (i = 0; i < num_results; i++){
-                        
                         rd_kafka_UserScramCredentialAlterationResultElement_t *element = rd_kafka_AlterUserScramCredentials_result_get_element(result,i);
                         char *username;
                         rd_kafka_error_t *error;
@@ -226,11 +222,6 @@ int main(int argc, char **argv) {
         char errstr[512];      /* librdkafka API error reporting buffer */
         const char *brokers = "localhost:9092";   /* Argument: broker list */
         rd_kafka_t *rk;        /* Admin client instance */
-        rd_kafka_AdminOptions_t *options;      /* Admin Options */
-        rd_kafka_event_t *event;               /* Result event */
-        int exitcode = 0;
-        int i;
-
         /*
          * Create Kafka client configuration place-holder
          */
@@ -245,7 +236,8 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "%s\n", errstr);
                 return 1;
         }
-        
+        rd_kafka_conf_set(conf, "debug", "all", NULL, 0);
+
         /*
          * Create an admin client, it can be created using any client type,
          * so we choose producer since it requires no extra configuration
@@ -266,33 +258,36 @@ int main(int argc, char **argv) {
          * on the result queue that is passed to DeleteRecords() */
         queue = rd_kafka_queue_new(rk);
 
-        /* Describe all the mechanisms */
+        /* Signal handler for clean shutdown */
+        signal(SIGINT, stop);
+
+        /* Describe all the users */
         DescribeAll(rk);
-        // return 0;
+        
         /* First Upsert a mechanism*/
-        printf("this is it!");
         const char *username = "broker";
         rd_kafka_ScramMechanism_t mechanism = RD_KAFKA_SCRAM_MECHANISM_SHA_256;
         int32_t iterations = 10000;
         const char *salt = "salt";
         const char *password = "password";
         
-        size_t num_alterations = 1;
         rd_kafka_UserScramCredentialAlteration_t *alterations[1];
 
-        printf("this is it!");
         alterations[0] = rd_kafka_UserScramCredentialUpsertion_new(username,salt,password,mechanism,iterations);
         
-        printf("this is it!");
         Alter(rk,alterations,1);
+        
         /* Describe all the mechanisms */
         DescribeAll(rk);
+
         /* Delete the upserted mechanism*/
         alterations[0] = rd_kafka_UserScramCredentialDeletion_new(username,mechanism);
         Alter(rk,alterations,1);
+
         /* Describe all the mechanisms */
         DescribeAll(rk);
-        
+
+
         signal(SIGINT, SIG_DFL);
 
         /* Destroy queue */
