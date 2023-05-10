@@ -5052,6 +5052,7 @@ struct rd_kafka_UserScramCredentialAlteration_s {
 rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialUpsertion_new(const char *username,const char *salt,const char *password,rd_kafka_ScramMechanism_t mechanism,int32_t iterations){
         rd_kafka_UserScramCredentialAlteration_t *alteration;
         alteration = rd_calloc(1,sizeof(*alteration));
+        alteration->user = rd_strdup(username);
         alteration->alteration_type = RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_UPSERT;
         alteration->alteration.upsertion.salt = rd_strdup(salt);
         alteration->alteration.upsertion.password = rd_strdup(password);
@@ -5063,6 +5064,7 @@ rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialUpsertion_
 rd_kafka_UserScramCredentialAlteration_t *rd_kafka_UserScramCredentialDeletion_new(const char *username,rd_kafka_ScramMechanism_t mechanism){
         rd_kafka_UserScramCredentialAlteration_t *alteration;
         alteration = rd_calloc(1,sizeof(*alteration));
+        alteration->user = rd_strdup(username);
         alteration->alteration_type = RD_KAFKA_USER_SCRAM_CREDENTIAL_ALTERATION_TYPE_DELETE;
         alteration->alteration.deletion.mechanism = mechanism;
         return alteration;
@@ -5197,8 +5199,6 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsRequest(rd_kafka_broker_t 
                         rd_kafka_buf_write_str(rkbuf,user,usersize);
                         rd_kafka_buf_write_i8(rkbuf,mechanism);
                         rd_kafka_buf_write_i32(rkbuf,iterations);
-                        // rd_kafkap_bytes_t *saltbytes = rd_kafkap_bytes_new(salt,saltsize);
-                        // rd_kafka_buf_write_kbytes(rkbuf,saltbytes);
                         rd_kafka_buf_write_str(rkbuf,salt,saltsize);
                         rd_chariov_t saltedpassword_chariov  = {.ptr = rd_alloca(EVP_MAX_MD_SIZE)}; /* Allocated in the Stack Only !*/
                         rd_chariov_t password_chariov;
@@ -5215,13 +5215,7 @@ rd_kafka_resp_err_t rd_kafka_AlterUserScramCredentialsRequest(rd_kafka_broker_t 
 
                         rd_kafka_sasl_scram_Hi0(rkb,evp,&password_chariov,&salt_chariov,iterations,&saltedpassword_chariov);
                         
-                        // rd_kafkap_bytes_t *saltedpasswordbytes = rd_kafkap_bytes_new(saltedpassword_chariov.ptr,saltedpassword_chariov.size);
-
-                        // printf("username : %s with salt : %s and password : %s of mechanism : %d with iterations : %d\n",user,salt,password,mechanism,iterations);
-                        // printf("\n\n salted password : \n==%s==\n",saltedpassword_chariov.ptr);
-                        // rd_kafka_buf_write_kbytes(rkbuf,saltedpasswordbytes);
                         rd_kafka_buf_write_str(rkbuf,saltedpassword_chariov.ptr,saltedpassword_chariov.size);
-                        // rd_free(saltedpassword_chariov.ptr);
                         rd_kafka_buf_write_tags(rkbuf);
                 }
         }

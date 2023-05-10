@@ -3708,8 +3708,7 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
         int32_t iterations = 10000;
         alterations[0] = rd_kafka_UserScramCredentialUpsertion_new(users[0],salt,password,mechanism,iterations);
         
-        rd_kafka_AdminOptions_t *options =
-            rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_ALTERUSERSCRAMCREDENTIALS);
+        options = rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_ALTERUSERSCRAMCREDENTIALS);
 
         if (rd_kafka_AdminOptions_set_request_timeout(
                 options, 30 * 1000 /* 30s */, errstr, sizeof(errstr))) {
@@ -3749,7 +3748,7 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
         rd_kafka_event_destroy(event);
         rd_kafka_UserScramCredentialAlteration_destroy(alterations[0]);
 
-        rd_kafka_AdminOptions_t *options = rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS);  
+        options = rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS);  
 
         if (rd_kafka_AdminOptions_set_request_timeout(
                 options, 30 * 1000 /* 30s */, errstr, sizeof(errstr))) {
@@ -3805,8 +3804,7 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
 
         alterations[0] = rd_kafka_UserScramCredentialDeletion_new(users[0],mechanism);
 
-        rd_kafka_AdminOptions_t *options =
-            rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_ALTERUSERSCRAMCREDENTIALS);
+        options = rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_ALTERUSERSCRAMCREDENTIALS);
 
         if (rd_kafka_AdminOptions_set_request_timeout(
                 options, 30 * 1000 /* 30s */, errstr, sizeof(errstr))) {
@@ -3843,7 +3841,7 @@ static void do_test_ScramConfigAdmin(rd_kafka_t *rk,rd_kafka_queue_t *queue){
                 }
         }
 
-        rd_kafka_AdminOptions_t *options = rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS);  
+        options = rd_kafka_AdminOptions_new(rk, RD_KAFKA_ADMIN_OP_DESCRIBEUSERSCRAMCREDENTIALS);  
 
         if (rd_kafka_AdminOptions_set_request_timeout(
                 options, 30 * 1000 /* 30s */, errstr, sizeof(errstr))) {
@@ -4011,6 +4009,8 @@ static void do_test_apis(rd_kafka_type_t cltype) {
                     rd_true /*with subscribing consumer*/, rd_true);
         }
 
+        do_test_ScramConfigAdmin(rk,mainq);
+
         rd_kafka_queue_destroy(mainq);
 
         rd_kafka_destroy(rk);
@@ -4022,7 +4022,6 @@ static void do_test_apis(rd_kafka_type_t cltype) {
 int main_0081_admin(int argc, char **argv) {
 
         do_test_apis(RD_KAFKA_PRODUCER);
-
         if (test_quick) {
                 TEST_SAY("Skipping further 0081 tests due to quick mode\n");
                 return 0;

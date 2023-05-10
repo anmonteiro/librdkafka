@@ -2,7 +2,7 @@
  * librdkafka - Apache Kafka C library
  *
  * Copyright (c) 2023, Adhitya Mahajan
- * All rights reserved.
+ *  rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -16,7 +16,7 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * ARE DISCLAIMED. IN NO EVENT SH THE COPYRIGHT OWNER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
  * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
  * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -77,7 +77,7 @@ int64_t parse_int(const char *what, const char *str) {
         return (int64_t)n;
 }
 
-static void DescribeAll(rd_kafka_t *rk){
+static void Describe(rd_kafka_t *rk,char **users,size_t user_cnt){
         rd_kafka_event_t *event;
         char errstr[512];      /* librdkafka API error reporting buffer */
         
@@ -89,8 +89,8 @@ static void DescribeAll(rd_kafka_t *rk){
                 return ;
         }
         
-        /* Null Argument gives us all the users*/
-        rd_kafka_DescribeUserScramCredentials(rk,NULL,0,options,queue);
+        /* Null Argument gives us  the users*/
+        rd_kafka_DescribeUserScramCredentials(rk,users,user_cnt,options,queue);
         rd_kafka_AdminOptions_destroy(options);
 
         /* Wait for results */
@@ -158,10 +158,9 @@ static void DescribeAll(rd_kafka_t *rk){
         rd_kafka_event_destroy(event);
 }
 
-void Alter(rd_kafka_t *rk,rd_kafka_UserScramCredentialAlteration_t **alterations,size_t alteration_cnt){
+static void Alter(rd_kafka_t *rk,rd_kafka_UserScramCredentialAlteration_t **alterations,size_t alteration_cnt){
         rd_kafka_event_t *event;
         char errstr[512];      /* librdkafka API error reporting buffer */
-        size_t i;
 
         /* Set timeout (optional) */
         rd_kafka_AdminOptions_t *options =
@@ -173,10 +172,11 @@ void Alter(rd_kafka_t *rk,rd_kafka_UserScramCredentialAlteration_t **alterations
                 return;
         }
 
-        /* Call the AlterUserScramCredentials Function*/
-        rd_kafka_AlterUserScramCredentials(rk,alterations,alteration_cnt,NULL,queue);
+        /* C the AlterUserScramCredentials Function*/
+        rd_kafka_AlterUserScramCredentials(rk,alterations,alteration_cnt,options,queue);
+        
         rd_kafka_AdminOptions_destroy(options);
-
+        
         /* Wait for results */
         event = rd_kafka_queue_poll(queue, -1 /*indefinitely*/);
         if (!event) {
@@ -211,10 +211,6 @@ void Alter(rd_kafka_t *rk,rd_kafka_UserScramCredentialAlteration_t **alterations
                 printf("AlterUserScramCredentials result END\n");
         }
         rd_kafka_event_destroy(event);
-        
-        
-        for(i=0;i<alteration_cnt;i++)
-                rd_kafka_UserScramCredentialAlteration_destroy(alterations[i]);
        
 }
 int main(int argc, char **argv) {
@@ -236,7 +232,7 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "%s\n", errstr);
                 return 1;
         }
-        rd_kafka_conf_set(conf, "debug", "all", NULL, 0);
+        rd_kafka_conf_set(conf, "debug", "", NULL, 0);
 
         /*
          * Create an admin client, it can be created using any client type,
@@ -245,7 +241,7 @@ int main(int argc, char **argv) {
          *
          * NOTE: rd_kafka_new() takes ownership of the conf object
          *       and the application must not reference it again after
-         *       this call.
+         *       this c.
          */
         rk = rd_kafka_new(RD_KAFKA_PRODUCER, conf, errstr, sizeof(errstr));
         if (!rk) {
@@ -260,10 +256,13 @@ int main(int argc, char **argv) {
 
         /* Signal handler for clean shutdown */
         signal(SIGINT, stop);
+        char *users[1];
+        users[0] = "broker";
+        size_t user_cnt = 1;
 
-        /* Describe all the users */
-        DescribeAll(rk);
-        
+        /* Describe  the users */
+        Describe(rk,users,user_cnt);
+
         /* First Upsert a mechanism*/
         const char *username = "broker";
         rd_kafka_ScramMechanism_t mechanism = RD_KAFKA_SCRAM_MECHANISM_SHA_256;
@@ -277,22 +276,26 @@ int main(int argc, char **argv) {
         
         Alter(rk,alterations,1);
         
-        /* Describe all the mechanisms */
-        DescribeAll(rk);
+        
+        rd_kafka_UserScramCredentialAlteration_destroy(alterations[0]);
+        /* Describe the mechanisms */
+        Describe(rk,users,user_cnt);
 
         /* Delete the upserted mechanism*/
         alterations[0] = rd_kafka_UserScramCredentialDeletion_new(username,mechanism);
-        Alter(rk,alterations,1);
 
-        /* Describe all the mechanisms */
-        DescribeAll(rk);
+        Alter(rk,alterations,1);
+        rd_kafka_UserScramCredentialAlteration_destroy(alterations[0]);
+        /* Describe the mechanisms */
+        Describe(rk,users,user_cnt);
 
 
         signal(SIGINT, SIG_DFL);
-
         /* Destroy queue */
         rd_kafka_queue_destroy(queue);
 
+
+        
         /* Destroy the producer instance */
         rd_kafka_destroy(rk);
 
