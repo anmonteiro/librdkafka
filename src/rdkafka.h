@@ -5313,7 +5313,7 @@ typedef int rd_kafka_event_type_t;
 #define RD_KAFKA_EVENT_LISTCONSUMERGROUPOFFSETS_RESULT 0x8000
 /** AlterConsumerGroupOffsets_result_t */
 #define RD_KAFKA_EVENT_ALTERCONSUMERGROUPOFFSETS_RESULT 0x10000
-/* ListOffsets*/
+/* ListOffsets_result_t */
 #define RD_KAFKA_EVENT_LISTOFFSETS_RESULT 0x20000
 
 
@@ -6675,6 +6675,8 @@ typedef enum rd_kafka_admin_op_t {
         RD_KAFKA_ADMIN_OP_LISTCONSUMERGROUPOFFSETS,
         /** AlterConsumerGroupOffsets */
         RD_KAFKA_ADMIN_OP_ALTERCONSUMERGROUPOFFSETS,
+        /** ListOffsets */
+        RD_KAFKA_ADMIN_OP_LISTOFFSETS,
         RD_KAFKA_ADMIN_OP__CNT /**< Number of ops defined */
 } rd_kafka_admin_op_t;
 
@@ -8110,7 +8112,20 @@ void rd_kafka_DeleteGroups(rd_kafka_t *rk,
                            rd_kafka_queue_t *rkqu);
 
 
+/**
+ * @brief ListOffsets for the given partitions in the partion_list_t
+*/
+RD_EXPORT 
+void rd_kafka_ListOffsets(rd_kafka_t *rk,
+                           rd_kafka_topic_partition_list_t *topic_partitions,
+                           const rd_kafka_AdminOptions_t *options,
+                           rd_kafka_queue_t *rkqu);
 
+RD_EXPORT
+size_t rd_kafka_ListOffsets_result_get_count(rd_kafka_ListOffsets_result_t *result);
+
+RD_EXPORT
+const rd_kafka_ListOffsetResultInfo_t *rd_kafka_ListOffsets_result_get_element(rd_kafka_ListOffsets_result_t *result,size_t idx);
 /*
  * DeleteGroups result type and methods
  */
@@ -9291,6 +9306,16 @@ RD_EXPORT
 rd_kafka_error_t *rd_kafka_abort_transaction(rd_kafka_t *rk, int timeout_ms);
 
 typedef struct rd_kafka_ListOffsetResultInfo_s rd_kafka_ListOffsetResultInfo_t;
+
+typedef enum rd_kafka_OffsetSpec_s {
+    RD_KAFKA_OFFSET_SPEC_MAX_TIMESTAMP = -3,
+    RD_KAFKA_OFFSET_SPEC_EARLIEST = -2,
+    RD_KAFKA_OFFSET_SPEC_LATEST = -1,
+} rd_kafka_OffsetSpec_t;
+
+rd_kafka_topic_partition_t *rd_kafka_ListOffsetResultInfo_get_topic_partition(rd_kafka_ListOffsetResultInfo_t *result_info);
+
+int64_t rd_kafka_ListOffsetResultInfo_get_timestamp(rd_kafka_ListOffsetResultInfo_t *result_info);
 /**@}*/
 
 /* @cond NO_DOC */

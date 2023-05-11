@@ -1624,7 +1624,8 @@ static void rd_kafka_AdminOptions_init(rd_kafka_t *rk,
             options->for_api == RD_KAFKA_ADMIN_OP_CREATETOPICS ||
             options->for_api == RD_KAFKA_ADMIN_OP_DELETETOPICS ||
             options->for_api == RD_KAFKA_ADMIN_OP_CREATEPARTITIONS ||
-            options->for_api == RD_KAFKA_ADMIN_OP_DELETERECORDS)
+            options->for_api == RD_KAFKA_ADMIN_OP_DELETERECORDS ||
+            options->for_api == RD_KAFKA_ADMIN_OP_LISTOFFSETS)
                 rd_kafka_confval_init_int(&options->operation_timeout,
                                           "operation_timeout", -1, 3600 * 1000,
                                           rk->rk_conf.admin.request_timeout_ms);
@@ -3609,16 +3610,24 @@ rd_kafka_ListOffsetResultInfo_t *rd_kafka_ListOffsetResultInfo_new(const char *t
         element->topic_partition = rd_kafka_topic_partition_new(topic,partition);
         return element;
 }
+rd_kafka_topic_partition_t *rd_kafka_ListOffsetResultInfo_get_topic_partition(rd_kafka_ListOffsetResultInfo_t *result_info){
+    return result_info->topic_partition;
+}
+int64_t rd_kafka_ListOffsetResultInfo_get_timestamp(rd_kafka_ListOffsetResultInfo_t *result_info){
+    return result_info->timestamp;
+}
 void rd_kafka_ListOffsetResultInfo_destroy(rd_kafka_ListOffsetResultInfo_t *element){
         rd_kafka_topic_partition_destroy(element->topic_partition);
         rd_free(element);
 }
 static void 
-rd_kafka_ListOffsetsResponse_merge(rd_kafka_op_t *rko_fanout,
+rd_kafka_ListOffsets_response_merge(rd_kafka_op_t *rko_fanout,
                                       const rd_kafka_op_t *rko_partial){
         size_t partition_cnt;               
         size_t i;
-        
+        rd_assert(rko_partial->rko_evtype ==
+                  RD_KAFKA_EVENT_LISTOFFSETS_RESULT);
+
         partition_cnt = rd_list_cnt(&rko_partial->rko_u.admin_result.results);
         for(i=0;i<partition_cnt;i++){
                 rd_kafka_ListOffsetResultInfo_t *element = rd_list_elem(&rko_partial->rko_u.admin_result.results,i);
@@ -3626,6 +3635,18 @@ rd_kafka_ListOffsetsResponse_merge(rd_kafka_op_t *rko_fanout,
         }
         return;
 
+}
+
+size_t rd_kafka_ListOffsets_result_get_count(rd_kafka_ListOffsets_result_t *result){
+        rd_kafka_op_type_t reqtype = result->rko_u.admin_result.reqtype & ~RD_KAFKA_OP_FLAGMASK;
+        rd_assert(reqtype == RD_KAFKA_OP_LISTOFFSETS);
+        return rd_list_cnt(&result->rko_u.admin_result.results);
+}
+
+const rd_kafka_ListOffsetResultInfo_t *rd_kafka_ListOffsets_result_get_element(rd_kafka_ListOffsets_result_t *result,size_t idx){
+        rd_kafka_op_type_t reqtype = result->rko_u.admin_result.reqtype & ~RD_KAFKA_OP_FLAGMASK;
+        rd_assert(reqtype == RD_KAFKA_OP_LISTOFFSETS);
+        return rd_list_elem(&result->rko_u.admin_result.results,idx);
 }
 static rd_kafka_resp_err_t
 rd_kafka_ListOffsetsResponse_parse(rd_kafka_op_t *rko_req,
@@ -3803,6 +3824,7 @@ rd_kafka_ListOffsets_leaders_queried_cb(rd_kafka_t *rk,
 
         rd_assert((rko_fanout->rko_type & ~RD_KAFKA_OP_FLAGMASK) ==
                   RD_KAFKA_OP_ADMIN_FANOUT);
+
         if (err) {
         err:
                 rd_kafka_admin_result_fail(
@@ -3822,14 +3844,12 @@ rd_kafka_ListOffsets_leaders_queried_cb(rd_kafka_t *rk,
                 if (!rktpar->err)
                         continue;
                 rd_kafka_ListOffsetResultInfo_t *result_element = rd_kafka_ListOffsetResultInfo_new(rktpar->topic,rktpar->partition);
-                result_element->topic_partition = rd_kafka_topic_partition_copy(rktpar);
+                result_element->topic_partition->err = rktpar->err;
                 rd_list_add(&rko_fanout->rko_u.admin_request.fanout.results,result_element);
-
         }
 
         
-        rko_fanout->rko_u.admin_request.fanout.outstanding =
-            rd_list_cnt(leaders);
+        rko_fanout->rko_u.admin_request.fanout.outstanding = rd_list_cnt(leaders);
 
         rd_assert(rd_list_cnt(leaders) > 0);
 
@@ -4041,7 +4061,7 @@ void rd_kafka_ListOffsets(rd_kafka_t *rk,
         rd_kafka_op_t *rko_fanout;
         rd_kafka_topic_partition_list_t *copied_topic_partitions;
         static const struct rd_kafka_admin_fanout_worker_cbs fanout_cbs = {
-            rd_kafka_ListOffsets_response_merge,        /*To implement*/
+            rd_kafka_ListOffsets_response_merge,
             rd_kafka_topic_partition_list_copy_opaque, /*Do not know exactly*/
         };                        
         rd_assert(rkqu);

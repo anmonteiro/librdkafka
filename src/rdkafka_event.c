@@ -84,6 +84,8 @@ const char *rd_kafka_event_name(const rd_kafka_event_t *rkev) {
                 return "ListConsumerGroupOffsetsResult";
         case RD_KAFKA_EVENT_OAUTHBEARER_TOKEN_REFRESH:
                 return "SaslOAuthBearerTokenRefresh";
+        case RD_KAFKA_EVENT_LISTOFFSETS_RESULT:
+                return "ListOffsets";
         default:
                 return "?unknown?";
         }
