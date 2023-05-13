@@ -2652,12 +2652,6 @@ void rd_kafka_topic_partition_list_destroy_free(void *ptr) {
             (rd_kafka_topic_partition_list_t *)ptr);
 }
 
-rd_kafka_list_offset_t *
-rd_kafka_list_offset_list_add(rd_kafka_list_offset_list_t *offsets){
-        int count = offsets->count;
-        offsets->count++;
-        return &(offsets->offsets[count-1]);
-}
 /**
  * Add a partition to an rktpar list.
  * The list must have enough room to fit it.

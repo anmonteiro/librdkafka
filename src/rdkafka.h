@@ -6694,6 +6694,11 @@ typedef enum rd_kafka_admin_op_t {
 
 typedef struct rd_kafka_AdminOptions_s rd_kafka_AdminOptions_t;
 
+typedef enum {
+        RD_KAFKA_READ_UNCOMMITTED = 0,
+        RD_KAFKA_READ_COMMITTED   = 1
+} rd_kafka_isolation_level_t;
+
 /**
  * @brief Create a new AdminOptions object.
  *
@@ -9308,11 +9313,6 @@ rd_kafka_error_t *rd_kafka_commit_transaction(rd_kafka_t *rk, int timeout_ms);
  */
 RD_EXPORT
 rd_kafka_error_t *rd_kafka_abort_transaction(rd_kafka_t *rk, int timeout_ms);
-
-typedef enum rd_kafka_isolation_level_s {
-        RD_KAFKA_READ_UNCOMMITTED = 0,
-        RD_KAFKA_READ_COMMITTED   = 1
-} rd_kafka_isolation_level_t;
 
 typedef enum rd_kafka_OffsetSpec_s {
     RD_KAFKA_OFFSET_SPEC_MAX_TIMESTAMP = -3,

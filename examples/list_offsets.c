@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
                 return 1;
         }
 
-        if(rd_kafka_AdminOptions_set_isolation_level(options,RD_KAFKA_READ_COMMITTED,errstr,sizeof(errstr))){
+        if(rd_kafka_AdminOptions_set_isolation_level(options, RD_KAFKA_READ_COMMITTED, errstr, sizeof(errstr))){
                 fprintf(stderr, "%% Failed to set isolation level: %s\n", errstr);
                 return 1;
         }

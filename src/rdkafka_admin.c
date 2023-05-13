@@ -3625,6 +3625,13 @@ rd_kafka_ListOffsetResultInfo_t *rd_kafka_ListOffsetResultInfo_new(const char *t
         element->topic_partition = rd_kafka_topic_partition_new(topic,partition);
         return element;
 }
+rd_kafka_ListOffsetResultInfo_t *rd_kafka_ListOffsetResultInfo_copy(rd_kafka_ListOffsetResultInfo_t *element){
+        rd_kafka_ListOffsetResultInfo_t *copiedelement;
+        copiedelement = rd_calloc(1,sizeof(*element));
+        copiedelement->topic_partition = rd_kafka_topic_partition_copy(element->topic_partition);
+        copiedelement->timestamp = element->timestamp;
+        return copiedelement;
+}
 const rd_kafka_topic_partition_t *rd_kafka_ListOffsetResultInfo_get_topic_partition(rd_kafka_ListOffsetResultInfo_t *result_info){
     return result_info->topic_partition;
 }
@@ -3663,8 +3670,9 @@ const rd_kafka_ListOffsetResultInfo_t *rd_kafka_ListOffsets_result_get_element(r
         rd_assert(reqtype == RD_KAFKA_OP_LISTOFFSETS);
         return rd_list_elem(&result->rko_u.admin_result.results,idx);
 }
+
 static rd_kafka_resp_err_t
-rd_kafka_ListOffsetsResponse_parse(rd_kafka_op_t *rko_req,
+rd_kafka_ListOffsetsResponse_parse0(rd_kafka_op_t *rko_req,
                                      rd_kafka_op_t **rko_resultp,
                                      rd_kafka_buf_t *reply,
                                      char *errstr,
@@ -3739,7 +3747,8 @@ err_parse:
 
         return reply->rkbuf_err;
 }
-rd_kafka_ListOffsetsRequest(rd_kafka_broker_t *rkb,
+
+rd_kafka_resp_err_t rd_kafka_ListOffsetsRequest0(rd_kafka_broker_t *rkb,
                               const rd_list_t *offsets /* rd_kafka_topic_partition_list_t*/,
                               rd_kafka_AdminOptions_t *options,
                               char *errstr,
@@ -3776,7 +3785,7 @@ rd_kafka_ListOffsetsRequest(rd_kafka_broker_t *rkb,
         rd_kafka_buf_write_i32(rkbuf,-1); /* Replica ID*/
 
         if(ApiVersion > 1)
-                rd_kafka_buf_write_i8(rkbuf,(rd_kafka_isolation_level_t)options->isolation_level); 
+                rd_kafka_buf_write_i8(rkbuf,options->isolation_level.u.INT.v); 
         
         of_topic = rd_kafka_buf_write_arraycnt_pos(rkbuf);
         of_partition = -1;
@@ -3845,8 +3854,8 @@ rd_kafka_ListOffsets_leaders_queried_cb(rd_kafka_t *rk,
         size_t i;
 
         static const struct rd_kafka_admin_worker_cbs cbs = {
-            rd_kafka_ListOffsetsRequest,
-            rd_kafka_ListOffsetsResponse_parse,
+            rd_kafka_ListOffsetsRequest0,
+            rd_kafka_ListOffsetsResponse_parse0,
         };
 
         rd_assert((rko_fanout->rko_type & ~RD_KAFKA_OP_FLAGMASK) ==
