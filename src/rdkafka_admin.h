@@ -97,7 +97,12 @@ struct rd_kafka_AdminOptions_s {
                                           *   to query for.
                                           *   Valid for: ListConsumerGroups.
                                           */
-
+        
+        rd_kafka_confval_t isolation_level; /**< INT:Isolation Level needed for list Offset
+                                             *   to query for.
+                                             *   Default Set to RD_KAFKA_READ_UNCOMMITTED
+                                            */
+        
         rd_kafka_confval_t opaque; /**< PTR: Application opaque.
                                     *   Valid for all. */
 };

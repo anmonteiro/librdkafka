@@ -155,6 +155,10 @@ int main(int argc, char **argv) {
                 return 1;
         }
 
+        if(rd_kafka_AdminOptions_set_isolation_level(options,RD_KAFKA_READ_COMMITTED,errstr,sizeof(errstr))){
+                fprintf(stderr, "%% Failed to set isolation level: %s\n", errstr);
+                return 1;
+        }
         /* Call ListOffsets */
         rd_kafka_ListOffsets(rk, topic_partitions, options, queue);
         rd_kafka_AdminOptions_destroy(options);

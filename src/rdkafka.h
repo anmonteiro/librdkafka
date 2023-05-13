@@ -6874,6 +6874,15 @@ rd_kafka_error_t *rd_kafka_AdminOptions_set_match_consumer_group_states(
     size_t consumer_group_states_cnt);
 
 /**
+ * Set Isolation Level to RD_KAFKA_READ_COMMITTED 
+ * or RD_KAFKA_READ_UNCOMMITTED
+*/
+RD_EXPORT
+rd_kafka_resp_err_t rd_kafka_AdminOptions_set_isolation_level(rd_kafka_AdminOptions_t *options,
+                                 rd_kafka_isolation_level_t value,
+                                 char *errstr,
+                                 size_t errstr_size);
+/**
  * @brief Set application opaque value that can be extracted from the
  *        result event using rd_kafka_event_opaque()
  */
@@ -8121,11 +8130,6 @@ void rd_kafka_ListOffsets(rd_kafka_t *rk,
                            const rd_kafka_AdminOptions_t *options,
                            rd_kafka_queue_t *rkqu);
 
-RD_EXPORT
-size_t rd_kafka_ListOffsets_result_get_count(rd_kafka_ListOffsets_result_t *result);
-
-RD_EXPORT
-const rd_kafka_ListOffsetResultInfo_t *rd_kafka_ListOffsets_result_get_element(rd_kafka_ListOffsets_result_t *result,size_t idx);
 /*
  * DeleteGroups result type and methods
  */
@@ -9305,7 +9309,10 @@ rd_kafka_error_t *rd_kafka_commit_transaction(rd_kafka_t *rk, int timeout_ms);
 RD_EXPORT
 rd_kafka_error_t *rd_kafka_abort_transaction(rd_kafka_t *rk, int timeout_ms);
 
-typedef struct rd_kafka_ListOffsetResultInfo_s rd_kafka_ListOffsetResultInfo_t;
+typedef enum rd_kafka_isolation_level_s {
+        RD_KAFKA_READ_UNCOMMITTED = 0,
+        RD_KAFKA_READ_COMMITTED   = 1
+} rd_kafka_isolation_level_t;
 
 typedef enum rd_kafka_OffsetSpec_s {
     RD_KAFKA_OFFSET_SPEC_MAX_TIMESTAMP = -3,
@@ -9313,9 +9320,21 @@ typedef enum rd_kafka_OffsetSpec_s {
     RD_KAFKA_OFFSET_SPEC_LATEST = -1,
 } rd_kafka_OffsetSpec_t;
 
-rd_kafka_topic_partition_t *rd_kafka_ListOffsetResultInfo_get_topic_partition(rd_kafka_ListOffsetResultInfo_t *result_info);
+typedef struct rd_kafka_ListOffsetResultInfo_s rd_kafka_ListOffsetResultInfo_t;
 
+RD_EXPORT
+const rd_kafka_topic_partition_t *rd_kafka_ListOffsetResultInfo_get_topic_partition(rd_kafka_ListOffsetResultInfo_t *result_info);
+
+RD_EXPORT
 int64_t rd_kafka_ListOffsetResultInfo_get_timestamp(rd_kafka_ListOffsetResultInfo_t *result_info);
+
+RD_EXPORT
+size_t rd_kafka_ListOffsets_result_get_count(rd_kafka_ListOffsets_result_t *result);
+
+RD_EXPORT
+const rd_kafka_ListOffsetResultInfo_t *rd_kafka_ListOffsets_result_get_element(rd_kafka_ListOffsets_result_t *result,size_t idx);
+
+
 /**@}*/
 
 /* @cond NO_DOC */

@@ -1547,6 +1547,16 @@ rd_kafka_AdminOptions_set_broker(rd_kafka_AdminOptions_t *options,
                                          &ibroker_id, errstr, errstr_size);
 }
 
+rd_kafka_resp_err_t
+rd_kafka_AdminOptions_set_isolation_level(rd_kafka_AdminOptions_t *options,
+                                 rd_kafka_isolation_level_t value,
+                                 char *errstr,
+                                 size_t errstr_size){
+        rd_kafka_confval_set_type(&options->isolation_level,
+                                        RD_KAFKA_CONFVAL_INT,&value,
+                                        errstr,errstr_size);
+} 
+
 rd_kafka_error_t *rd_kafka_AdminOptions_set_require_stable_offsets(
     rd_kafka_AdminOptions_t *options,
     int true_or_false) {
@@ -1666,6 +1676,11 @@ static void rd_kafka_AdminOptions_init(rd_kafka_t *rk,
                 rd_kafka_confval_disable(&options->match_consumer_group_states,
                                          "match_consumer_group_states");
 
+        if(options->for_api == RD_KAFKA_ADMIN_OP_LISTOFFSETS)
+                rd_kafka_confval_init_int(&options->isolation_level,"isolation_level",0,1,0);
+        else
+                rd_kafka_confval_disable(&options->isolation_level,"isolation_level");
+        
         rd_kafka_confval_init_int(&options->broker, "broker", 0, INT32_MAX, -1);
         rd_kafka_confval_init_ptr(&options->opaque, "opaque");
 }
@@ -3610,7 +3625,7 @@ rd_kafka_ListOffsetResultInfo_t *rd_kafka_ListOffsetResultInfo_new(const char *t
         element->topic_partition = rd_kafka_topic_partition_new(topic,partition);
         return element;
 }
-rd_kafka_topic_partition_t *rd_kafka_ListOffsetResultInfo_get_topic_partition(rd_kafka_ListOffsetResultInfo_t *result_info){
+const rd_kafka_topic_partition_t *rd_kafka_ListOffsetResultInfo_get_topic_partition(rd_kafka_ListOffsetResultInfo_t *result_info){
     return result_info->topic_partition;
 }
 int64_t rd_kafka_ListOffsetResultInfo_get_timestamp(rd_kafka_ListOffsetResultInfo_t *result_info){
@@ -3681,27 +3696,35 @@ rd_kafka_ListOffsetsResponse_parse(rd_kafka_op_t *rko_req,
                         int64_t timestamp = -1;
                         int64_t offset = -1;
                         size_t num_offsets = 1;
+                        int32_t leader_epoch;
                         int itr ;
                         rd_kafka_buf_read_i32(reply,&partition);
                         rd_kafka_ListOffsetResultInfo_t *element = rd_kafka_ListOffsetResultInfo_new(topic.str,partition);
                         rd_kafka_buf_read_i16(reply,&errorcode);
                         element->topic_partition->err = errorcode;
+
                         if(rd_kafka_buf_ApiVersion(reply) > 0)
                                 rd_kafka_buf_read_i64(reply,&timestamp);
+
                         element->timestamp = timestamp;
+
                         if(rd_kafka_buf_ApiVersion(reply) = 0){
                                 size_t num_offsets;
                                 rd_kafka_buf_read_arraycnt(reply,&num_offsets,10000);
                         }
+
                         rd_kafka_buf_read_i64(reply,&offset);
                         element->topic_partition->offset = offset;
+
+                        /* Ignore other offsets */
                         for(itr = 1;itr < num_offsets;itr++)
                                 rd_kafka_buf_read_i64(reply,&offset);
+
                         if(rd_kafka_buf_ApiVersion(reply) > 3){
-                                int32_t leader_epoch;
                                 rd_kafka_buf_read_i32(reply,&leader_epoch);
                                 /* To Set or not to set*/
                         }
+
                         rd_list_add(&rko_result->rko_u.admin_result.results,element);
 
                 }
@@ -3753,7 +3776,7 @@ rd_kafka_ListOffsetsRequest(rd_kafka_broker_t *rkb,
         rd_kafka_buf_write_i32(rkbuf,-1); /* Replica ID*/
 
         if(ApiVersion > 1)
-                rd_kafka_buf_write_i8(rkbuf,0); /*Isolation Level*/
+                rd_kafka_buf_write_i8(rkbuf,(rd_kafka_isolation_level_t)options->isolation_level); 
         
         of_topic = rd_kafka_buf_write_arraycnt_pos(rkbuf);
         of_partition = -1;
@@ -3775,17 +3798,21 @@ rd_kafka_ListOffsetsRequest(rd_kafka_broker_t *rkb,
                 }else{
                         num_partitions++;
                 }
+
                 /* Partition Index*/
                 rd_kafka_buf_write_i32(rkbuf,topic_partition->partition);
 
                 /* Leader Epoch Version 4 Onwards */
                 if(ApiVersion >= 4)
                         rd_kafka_buf_write_i32(rkbuf,-1);
+
                 /* Timestamp */
                 rd_kafka_buf_write_i64(rkbuf,topic_partition->offset);
+
                 /* Max_Num_Offsets in version 0*/
                 if(ApiVersion == 0)
                         rd_kafka_buf_write_i32(rkbuf,1);
+
                 if(ApiVersion >= 6)
                         rd_kafka_buf_write_tags(rkbuf);
         }
